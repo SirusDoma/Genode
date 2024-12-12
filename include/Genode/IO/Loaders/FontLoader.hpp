@@ -6,7 +6,7 @@
 namespace Gx
 {
     class Font;
-    class FontLoader final : public ResourceLoader<Font>
+    class FontLoader : public ResourceLoader<Font>
     {
     public:
         FontLoader() = default;
