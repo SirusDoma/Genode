@@ -14,7 +14,7 @@ After successfully developed my game with this framework, I've decided to put th
 >
 > #### Inheritance over Composition
 > The framework currently employs an _Inheritance over Composition_ design.
-> Certain modules such as `SceneGraph` are heavily rely on virtual inheritance which may (or may not) produce performance overhead particularly when dealing with millions of complex node objects.
+> Certain modules such as `SceneGraph` are heavily rely on virtual inheritance which may (or may not) introduce performance overhead particularly when dealing with millions of complex node objects.
 >
 > Alternatively, you can roll out your own [ECS solution](https://en.wikipedia.org/wiki/Entity_component_system) and use lower-level abstraction classes to partially utilize the `SceneGraph` module, thereby still gaining the benefits of _Composition over Inheritance_.
 > See [_Design Goals_](#design-goals) below for more details.
@@ -30,7 +30,7 @@ The framework provides range of modules and lifecycles that is simple, clear and
 ## Resource management freedom
 Many frameworks or engines include built-in functionalities for resource serialization, deserialization, and management/allocation. Often, these approaches can be restrictive. For example, these kind of engines usually won't allow you to change the content pipeline or file format, and it is unintuitive to customize and workaround.
 
-This framework simplifies how you interact with resources while still allowing you to choose how they are deserialized, managed, and allocated.
+This framework streamline on how you interact with resources while still allowing you to choose how they are deserialized, managed, and allocated.
 
 ## SFML Extension
 The entire modules are built side by side with SFML. Some of the SFML classes are re-implemented to fit the framework usage, however, you can always use SFML built-in classes.
@@ -42,9 +42,9 @@ There are several ranges of abstraction levels in this framework. High abstracti
 This framework is designed so that lower-level and higher-level abstractions can work together, often directly alongside SFML, letting you choose the right level of abstraction for your needs.
 
 ## Conveniences over speed
-This framework was initially designed by a single developer in a limited scope, and thus conveniences are priortized over performance and efficiencies. It is still important aspect to certain degree, after all, the game that was built with this framework is a rhythm game that has hundreds moving objects at a time and require smooth framerate and timing precision.
+This framework was initially designed by a single developer in a limited scope, and thus conveniences are priortized over performance and efficiencies. It is still important aspect to certain degree, after all, the game that was built with this framework is a rhythm game that has hundreds moving objects at a time and require smooth framerate and high timing precision.
 
-That being said, there are certainly faster 2D game frameworks/engines out there that are more capable in handling bigger scope in more sophisticated/intuitive/elegant way. However, the goal is to speed up my game development process. If you find yourself in a similar situation, consider give Genode a try.
+That being said, there are certainly faster 2D game frameworks/engines out there that are faster and more capable in handling bigger scope in more sophisticated/intuitive/elegant way. However, the goal is to speed up my game development process. If you find yourself in a similar situation, consider give Genode a try.
 
 # Integration
 This framework was directly added into the game source tree and has not been tested to built and included separately.
@@ -61,7 +61,7 @@ You can find the compilation output in [`bin`](/bin) folder.
 
 # Documentation
 
-Not available at the moment.
+Please refers to the [wiki](https://github.com/SirusDoma/Genode/wiki) for the Documentation.
 
 # License
 
