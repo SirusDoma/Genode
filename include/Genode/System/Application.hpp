@@ -1,12 +1,9 @@
 #pragma once
 
 #include <Genode/Graphics/RenderSurface.hpp>
-#include <Genode/Graphics/RenderSurfaceAdaptor.hpp>
 #include <Genode/SceneGraph/SceneDirector.hpp>
 
 #include <SFML/Window.hpp>
-
-#include <functional>
 #include <memory>
 
 namespace Gx
@@ -18,9 +15,6 @@ namespace Gx
     {
     public:
         static Application& Instance();
-
-        Application(const std::string& title, const sf::VideoMode& mode, bool fullScreen = false, const sf::ContextSettings& settings = {});
-        Application(const std::string& title, const sf::VideoMode& mode, const sf::View& view, bool fullScreen = false, const sf::ContextSettings& settings = {});
 
         ~Application() override = default;
 
@@ -64,11 +58,14 @@ namespace Gx
         static sf::VideoMode GetDesktopVideoMode();
 
     protected:
+        Application(const std::string& title, const sf::VideoMode& mode, bool fullScreen = false, const sf::ContextSettings& settings = {});
+        Application(const std::string& title, const sf::VideoMode& mode, const sf::View& view, bool fullScreen = false, const sf::ContextSettings& settings = {});
+
         sf::RenderWindow& GetMainWindow() const;
         const sf::ContextSettings& GetSettings() const;
 
-        virtual void Boot();
-        virtual int Shutdown();
+        virtual void Boot() = 0;
+        virtual int Shutdown() = 0;
 
         void Update(double delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
@@ -77,7 +74,7 @@ namespace Gx
         virtual void OnFocusChanged(bool focus);
         virtual void OnResized(const sf::Vector2u& size);
         virtual void OnInputReceived(sf::Event& ev);
-        virtual void OnClose();
+        virtual bool OnClose();
 
     private:
         void CreateMainWindow();

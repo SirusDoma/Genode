@@ -169,15 +169,6 @@ namespace Gx
         return m_director;
     }
 
-    void Application::Boot()
-    {
-    }
-
-    int Application::Shutdown()
-    {
-        return 0;
-    }
-
     void Application::Update(const double delta)
     {
         m_director.Update(delta);
@@ -191,10 +182,8 @@ namespace Gx
 
     void Application::Close()
     {
-        OnClose();
-
         // Ask game permission first before closing
-        m_closeRequested = m_director.Close();
+        m_closeRequested = OnClose() && m_director.Close();
     }
 
     const std::string& Application::GetTitle() const
@@ -294,8 +283,9 @@ namespace Gx
         m_director.Input(ev);
     }
 
-    void Application::OnClose()
+    bool Application::OnClose()
     {
+        return true;
     }
 
     void Application::CreateMainWindow()
