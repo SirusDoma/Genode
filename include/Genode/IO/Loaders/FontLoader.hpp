@@ -11,10 +11,10 @@ namespace Gx
     public:
         FontLoader() = default;
 
-        bool IsStreaming() const override;
+        [[nodiscard]] bool IsStreaming() const override;
         void UseSmooth(bool smooth);
 
-        ResourcePtr<Font> LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const override;
+        [[nodiscard]] ResourcePtr<Font> LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const override;
         ResourcePtr<Font> LoadFromMemory(void* data, std::size_t size, const ResourceContext& ctx) const override;
         ResourcePtr<Font> LoadFromStream(sf::InputStream& stream, const ResourceContext& ctx) const override;
 

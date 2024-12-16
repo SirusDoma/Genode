@@ -28,7 +28,7 @@ namespace Gx
         unsigned int GetRenderFrequency() const;
 
         sf::State GetWindowState() const;
-        void SetWindowState(const sf::State state);
+        void SetWindowState(sf::State state);
 
         const sf::Color& GetClearColor() const;
         void SetClearColor(const sf::Color& clearColor);
@@ -43,12 +43,12 @@ namespace Gx
         const sf::View& GetView() const override;
         void SetView(const sf::View& view) override;
 
-        void Clear(const sf::Color clearColor) override;
-        void Clear(const sf::Color clearColor, sf::StencilValue stencilValue) override;
+        void Clear(sf::Color clearColor) override;
+        void Clear(sf::Color clearColor, sf::StencilValue stencilValue) override;
         void Render(const Renderable& renderable, const RenderStates& states) override;
-        void Render(const sf::Vertex* vertices, const std::size_t vertexCount, const sf::PrimitiveType type, const RenderStates& states) override;
+        void Render(const sf::Vertex* vertices, std::size_t vertexCount, sf::PrimitiveType type, const RenderStates& states) override;
         void Render(const sf::VertexBuffer& vertexBuffer, const RenderStates& states) override;
-        void Render(const sf::VertexBuffer& vertexBuffer, const std::size_t firstVertex, const std::size_t vertexCount,const RenderStates& states) override;
+        void Render(const sf::VertexBuffer& vertexBuffer, std::size_t firstVertex, std::size_t vertexCount,const RenderStates& states) override;
 
         // ReSharper disable CppNonExplicitConversionOperator
         virtual operator sf::RenderTarget&() const;
@@ -58,8 +58,8 @@ namespace Gx
         static sf::VideoMode GetDesktopVideoMode();
 
     protected:
-        Application(const std::string& title, const sf::VideoMode& mode, bool fullScreen = false, const sf::ContextSettings& settings = {});
-        Application(const std::string& title, const sf::VideoMode& mode, const sf::View& view, bool fullScreen = false, const sf::ContextSettings& settings = {});
+        Application(std::string title, const sf::VideoMode& mode, bool fullScreen = false, const sf::ContextSettings& settings = {});
+        Application(std::string title, const sf::VideoMode& mode, const sf::View& view, bool fullScreen = false, const sf::ContextSettings& settings = {});
 
         sf::RenderWindow& GetMainWindow() const;
         const sf::ContextSettings& GetSettings() const;

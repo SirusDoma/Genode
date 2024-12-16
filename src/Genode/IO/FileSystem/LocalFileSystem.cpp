@@ -158,7 +158,7 @@ namespace Gx
     std::vector<std::string> LocalFileSystem::GetAssetPaths()
     {
         auto paths = std::vector<std::string>();
-        for (auto p : m_paths)
+        for (const auto& p : m_paths)
             paths.push_back(weakly_canonical(path(p)).string());
 
         return paths;
@@ -203,14 +203,11 @@ namespace Gx
         if (const auto filePath = path(fileName.c_str()); exists(filePath))
             return true;
 
-        for (std::string& path : m_paths)
+        return std::any_of(m_paths.begin(), m_paths.end(), [fileName] (const std::string& path)
         {
-            std::string fullPath = std::string(path).append("/").append(fileName);
-            if (exists(fullPath.c_str()))
-                return true;
-        }
-
-        return false;
+            const std::string fullPath = std::string(path).append("/").append(fileName);
+            return exists(fullPath.c_str());
+        });
     }
 
     std::string LocalFileSystem::GetFileName(const std::string& fullPath, const bool withExtension) const

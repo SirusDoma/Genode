@@ -69,7 +69,7 @@ namespace Gx
         virtual void OnControlChildAdded(Control& control);
         virtual void OnControlChildRemove(Control& control);
 
-        virtual void OnControlStateChanged(Control& sender, const State state);
+        virtual void OnControlStateChanged(Control& sender, State state);
         virtual void OnControlPress(Control& sender, const sf::Event::MouseButtonPressed& ev);
         virtual void OnControlClick(Control& sender, const sf::Event::MouseButtonReleased& ev);
         virtual void OnControlDoubleClick(Control& sender, const sf::Event::MouseButtonPressed& ev);

@@ -79,7 +79,7 @@ namespace Gx
 
         if (!scene)
         {
-            if constexpr (std::is_default_constructible_v<T>)
+            if constexpr (Constructible<T>::value)
             {
                 Register<T>();
                 return Present<T>(context, std::forward<Args>(args)...);
