@@ -8,9 +8,9 @@ It began with the idea that it would only evolve or change to satisfy the *deman
 After successfully developed my game with this framework, I've decided to put this into an open source repository.
 
 > [!Important]
-> #### In development
-> The framework is not finalized for public consumption, it may (or may not) need development effort to turn framework into a framework that fits for general use cases.
-> Consider to open an issue and/or raise a pull request if you're interested to contribute.
+> #### Subject to change
+> The framework was not built to be used for general use-cases. As such, the API and designs are subject to change.  
+> Consider to open an issue and/or raise a pull request if you're interested to shape this framework better!
 >
 > #### Inheritance over Composition
 > The framework currently employs an _Inheritance over Composition_ design.
