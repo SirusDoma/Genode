@@ -40,7 +40,7 @@ set(SFML_STATIC_LIBRARIES TRUE)
 fetchcontent_declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.0-rc.2
+    GIT_TAG 3.0.0
 )
 fetchcontent_makeavailable(SFML)
 
