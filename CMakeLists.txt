@@ -36,11 +36,11 @@ message("-- Build type: " ${CMAKE_BUILD_TYPE})
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
 
 # -- SFML
-set(SFML_STATIC_LIBRARIES TRUE)
+set(SFML_USE_STATIC_STD_LIBS TRUE)
 fetchcontent_declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.0
+    GIT_TAG 3.0.1
 )
 fetchcontent_makeavailable(SFML)
 
