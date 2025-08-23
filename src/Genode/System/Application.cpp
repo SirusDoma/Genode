@@ -102,8 +102,6 @@ namespace Gx
 
                         auto ev = event.value();
                         OnInputReceived(ev);
-
-                        break;
                     }
                 }
             }
