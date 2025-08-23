@@ -32,18 +32,6 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 message("-- Build type: " ${CMAKE_BUILD_TYPE})
 
-# External Libs Sources and Flags
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
-
-# -- SFML
-set(SFML_USE_STATIC_STD_LIBS TRUE)
-fetchcontent_declare(
-    SFML
-    GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.1
-)
-fetchcontent_makeavailable(SFML)
-
 # Output directory
 set(OUTPUT_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
 file(MAKE_DIRECTORY ${OUTPUT_DIR})
@@ -58,12 +46,11 @@ message("-- Output Directory: " ${OUTPUT_DIR})
 
 if(WIN32)
     # Windows (Visual Studio) Compiler Output Flags
-    set_target_properties(${LIBRARY_NAME} PROPERTIES
-        WIN32_EXECUTABLE FALSE
-    )
-
-    # External Libs Compiler Flags
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_target_properties(${LIBRARY_NAME} PROPERTIES
+        WIN32_EXECUTABLE     FALSE
+        MSVC_RUNTIME_LIBRARY ${CMAKE_MSVC_RUNTIME_LIBRARY}
+    )
 elseif(APPLE)
     # Set dependencies libs
     target_link_libraries(${LIBRARY_NAME} PRIVATE "-framework Security")
@@ -71,6 +58,18 @@ else()
     # Libraries
     target_link_libraries(${LIBRARY_NAME} PRIVATE stdc++fs)
 endif()
+
+# External Libs Sources and Flags
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
+
+# -- SFML
+set(SFML_USE_STATIC_STD_LIBS TRUE)
+fetchcontent_declare(
+    SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 3.0.1
+)
+fetchcontent_makeavailable(SFML)
 
 # Application includes
 target_include_directories(${LIBRARY_NAME} PRIVATE src)
@@ -80,6 +79,6 @@ target_include_directories(${LIBRARY_NAME} PRIVATE extlibs/headers)
 # Link SFML
 target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window)
 
-# Include FreeType
+# Link FreeType
 find_package(Freetype REQUIRED)
 target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype)
