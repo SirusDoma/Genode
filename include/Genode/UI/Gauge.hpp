@@ -16,40 +16,40 @@ namespace Gx
         explicit Gauge(const sf::Texture& texture);
         Gauge(const sf::Texture& texture, const sf::IntRect& texCoords);
 
-        sf::FloatRect GetLocalBounds() const override;
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
 
-        bool IsFlickering() const;
+        [[nodiscard]] bool IsFlickering() const;
         void SetFlickering(bool flicker);
 
-        bool IsSlanted() const;
+        [[nodiscard]] bool IsSlanted() const;
         void SetSlanted(bool slanted);
 
-        Animation::AnimationState GetAnimationState() const;
+        [[nodiscard]] Animation::AnimationState GetAnimationState() const;
 
         template<typename... Args>
         void AddAnimationFrame(const Animation::Frame& first, const Args&... args);
         void AddAnimationFrame(const Animation::Frame& frame);
-        unsigned int GetAnimationFrameCount() const;
+        [[nodiscard]] unsigned int GetAnimationFrameCount() const;
 
-        const sf::Time& GetAnimationDuration() const;
+        [[nodiscard]] const sf::Time& GetAnimationDuration() const;
         void SetAnimationDuration(const sf::Time& duration);
 
-        const sf::Texture* GetTexture() const;
+        [[nodiscard]] const sf::Texture* GetTexture() const;
         void SetTexture(const sf::Texture& texture);
 
-        const sf::IntRect& GetTexCoords() const;
+        [[nodiscard]] const sf::IntRect& GetTexCoords() const;
         void SetTexCoords(const sf::IntRect& texCoords);
 
-        const sf::Color& GetColor() const override;
+        [[nodiscard]] const sf::Color& GetColor() const override;
         void SetColor(const sf::Color& color) override;
 
-        Orientation GetOrientation() const;
+        [[nodiscard]] Orientation GetOrientation() const;
         void SetOrientation(const Orientation& orientation);
 
-        float GetMaximumValue() const;
+        [[nodiscard]] float GetMaximumValue() const;
         void SetMaximumValue(float max);
 
-        float GetValue() const;
+        [[nodiscard]] float GetValue() const;
         void SetValue(float value);
 
     protected:

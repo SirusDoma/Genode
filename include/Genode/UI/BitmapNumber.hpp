@@ -20,21 +20,21 @@ namespace Gx
         BitmapNumber();
         explicit BitmapNumber(const sf::Texture& texture);
 
-        sf::FloatRect GetLocalBounds() const override;
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
 
-        const sf::Texture* GetTexture() const;
+        [[nodiscard]] const sf::Texture* GetTexture() const;
         void SetTexture(const sf::Texture& texture);
 
-        const sf::Color& GetColor() const override;
+        [[nodiscard]] const sf::Color& GetColor() const override;
         void SetColor(const sf::Color& color) override;
 
-        float GetKerning() const;
+        [[nodiscard]] float GetKerning() const;
         void SetKerning(float value);
 
-        int GetDigitCount() const;
+        [[nodiscard]] int GetDigitCount() const;
         void SetDigitCount(int count);
 
-        const sf::Time& GetAnimationDuration(unsigned int digit) const;
+        [[nodiscard]] const sf::Time& GetAnimationDuration(unsigned int digit) const;
         void SetAnimationDuration(const sf::Time& duration);
         void SetAnimationDuration(unsigned int digit, const sf::Time& duration);
 
@@ -42,16 +42,16 @@ namespace Gx
         void SetDigitFrame(unsigned int digit, sf::IntRect texCoords);
         void SetDigitsSize(sf::Vector2u size);
 
-        unsigned long long GetValue() const;
+        [[nodiscard]] unsigned long long GetValue() const;
         void SetValue(unsigned long long value);
 
-        Alignment GetAlignment() const;
+        [[nodiscard]] Alignment GetAlignment() const;
         void SetAlignment(Alignment alignment);
 
-        BlendMode GetBlendMode() const;
+        [[nodiscard]] BlendMode GetBlendMode() const;
         void SetBlendMode(Gx::BlendMode blendMode);
 
-        Animation::AnimationState GetAnimationState() const;
+        [[nodiscard]] Animation::AnimationState GetAnimationState() const;
         void SetAnimationCallback(const std::function<void(BitmapNumber&)> &animationCallback);
 
         void Stop();

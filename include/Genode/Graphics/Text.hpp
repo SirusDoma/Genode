@@ -464,6 +464,8 @@ namespace Gx
         ////////////////////////////////////////////////////////////
         [[nodiscard]] sf::Vector2f FindCharacterPosition(std::size_t index) const;
 
+        void Truncate(std::size_t maxWidth);
+
         ////////////////////////////////////////////////////////////
         /// @brief Get the local bounding rectangle of the entity
         ///
@@ -498,6 +500,16 @@ namespace Gx
         /// that the geometry is only updated when necessary.
         ////////////////////////////////////////////////////////////
         void EnsureGeometryUpdate() const;
+
+        ////////////////////////////////////////////////////////////
+        /// @brief An overridable callback that called when the font is changed
+        ////////////////////////////////////////////////////////////
+        virtual void OnFontChanged(const Gx::Font&) const {};
+
+        ////////////////////////////////////////////////////////////
+        /// @brief An overridable callback that called when the geometry is updating
+        ////////////////////////////////////////////////////////////
+        virtual void OnGeometryUpdating() const {};
 
         ////////////////////////////////////////////////////////////
         /// @brief An overridable callback that called when the geometry is updated

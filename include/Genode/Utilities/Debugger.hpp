@@ -23,7 +23,7 @@ namespace Gx
     class Debugger
     {
     public:
-        static bool IsDebuggerAttached()
+        [[nodiscard]] static bool IsDebuggerAttached()
         {
 #ifdef _WIN32
             return IsDebuggerPresent();

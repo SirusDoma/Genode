@@ -9,7 +9,7 @@ namespace Gx
         Unix
     };
 
-    inline static Platform GetCurrentPlatform()
+    [[nodiscard]] inline static Platform GetCurrentPlatform()
     {
 #ifdef _WIN32
         return Platform::Windows;

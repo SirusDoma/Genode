@@ -1,7 +1,11 @@
 ﻿#include <Genode/SceneGraph/Node.hpp>
-
-#include <algorithm>
 #include <Genode/System/Exception.hpp>
+
+#include <fmt/format.h>
+#include <algorithm>
+#include <regex>
+#include <string>
+#include <Genode/Utilities/StringHelper.hpp>
 
 namespace Gx
 {
@@ -40,6 +44,11 @@ namespace Gx
     void Node::Finalize()
     {
         m_state = State::Finalized;
+        for (const auto child : m_children)
+        {
+            if (child)
+                child->Finalize();
+        }
     }
 
     void Node::OnChildAdded(Node& node)
@@ -48,6 +57,42 @@ namespace Gx
 
     void Node::OnChildRemove(Node& node)
     {
+    }
+
+    bool Node::Match(const std::string& id, const std::string& pattern)
+    {
+        const static std::unordered_set reserved =
+        {
+            '.', '^', '$', '*', '+', '?', '(', ')', '[', ']', '{', '}', '\\', '|'
+        };
+
+        std::string rxp;
+        for (const char& ch : pattern)
+        {
+            if (ch == '*')
+                rxp += "[^/]*";
+            else if (ch == '?')
+                rxp += "[^/]";
+            else if (reserved.count(ch))
+                rxp += fmt::format("\\{}", ch);
+            else
+                rxp += ch;
+        }
+
+        const std::regex regex(fmt::format("^{}$", rxp));
+        return std::regex_match(id, regex);
+    }
+
+    bool Node::Match(const Node& node, const std::string& pattern)
+    {
+        return Match(node.m_name, pattern) ||
+            (node.m_parent && Match(node.m_name, fmt::format("{}/{}", node.m_parent->m_name, pattern))) ||
+            (pattern.find("/") == std::string::npos && StringHelper::EndsWith(node.m_name, pattern));
+    }
+
+    bool Node::Match(const std::string& pattern) const
+    {
+        return Match(*this, pattern);
     }
 
     const std::string& Node::GetName() const
@@ -120,7 +165,7 @@ namespace Gx
     {
         for (const auto& child : m_children)
         {
-            if (child->m_name == name)
+            if (child->Match(name))
             {
                 if (m_state == State::Initialized && child->m_state != State::Initialized)
                 {

@@ -20,28 +20,32 @@ namespace Gx
         Node(Node&&) noexcept = default;
         Node& operator=(Node&&) = default;
 
-        const std::string& GetName() const;
+        [[nodiscard]] static bool Match(const std::string& id, const std::string& pattern);
+        [[nodiscard]] static bool Match(const Node& node, const std::string& pattern);
+        [[nodiscard]] bool Match(const std::string& pattern) const;
+
+        [[nodiscard]] const std::string& GetName() const;
         void SetName(const std::string& name);
 
-        const std::string& GetTag() const;
+        [[nodiscard]] const std::string& GetTag() const;
         void SetTag(const std::string& tag);
 
-        Node* GetParent() const;
-        std::vector<Node*> GetChildren() const;
-        std::vector<Node*> GetChildrenByTag(const std::string& tag) const;
-        Node* GetChildByName(const std::string& name) const;
-        Node* GetChildByTag(const std::string& tag) const;
-        std::size_t GetChildrenCount() const;
+        [[nodiscard]] Node* GetParent() const;
+        [[nodiscard]] std::vector<Node*> GetChildren() const;
+        [[nodiscard]] std::vector<Node*> GetChildrenByTag(const std::string& tag) const;
+        [[nodiscard]] Node* GetChildByName(const std::string& name) const;
+        [[nodiscard]] Node* GetChildByTag(const std::string& tag) const;
+        [[nodiscard]] std::size_t GetChildrenCount() const;
 
         void AddChild(Node& child);
         void RemoveChild(Node& child);
         void ClearChildren();
 
         template<typename T>
-        T* GetParent() const;
+        [[nodiscard]] T* GetParent() const;
 
         template<typename T>
-        T* FindChild(const std::string& name) const;
+        [[nodiscard]] T* FindChild(const std::string& name) const;
 
         template<typename... Nodes>
         std::enable_if_t<std::conjunction_v<std::is_base_of<Node, std::remove_reference_t<Nodes>>...>, void>

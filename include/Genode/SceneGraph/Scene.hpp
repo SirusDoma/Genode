@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <Genode/SceneGraph/Node.hpp>
 #include <Genode/SceneGraph/RenderableContainer.hpp>
 #include <Genode/SceneGraph/UpdatableContainer.hpp>
@@ -19,6 +20,7 @@
 namespace Gx
 {
     class Application;
+    class SceneDirector;
     class Scene : public virtual Node, public RenderableContainer, public UpdatableContainer,
                   public InputableContainer, public TaskContainer, public Presentable::Parent
     {
@@ -27,25 +29,25 @@ namespace Gx
 
         ~Scene() override = default;
 
-        static bool IsTrackable();
+        [[nodiscard]] static bool IsTrackable();
 
-        Application& GetApplication() const;
-        SceneDirector& GetDirector() const;
-        Context& GetContext();
+        [[nodiscard]] Application& GetApplication() const;
+        [[nodiscard]] SceneDirector& GetDirector() const;
+        [[nodiscard]] Context& GetContext();
 
-        const sf::View& GetView() const;
-        const sf::View& GetDefaultView() const;
+        [[nodiscard]] const sf::View& GetView() const;
+        [[nodiscard]] const sf::View& GetDefaultView() const;
         void SetView(const sf::View& view) const;
 
-        bool IsPresenting(Presentable& presentable) const override;
-        void Present(Presentable& presentable, const PresentationContext& context = PresentationContext::Default) override;
+        [[nodiscard]] bool IsPresenting(Presentable& presentable) const override;
+        void Present(Presentable& presentable, const PresentationContext& context) override;
         bool Dismiss(Presentable& presentable) override;
         bool Dismiss() override;
 
         template<typename T>
-        T& Require();
+        [[nodiscard]] T& Require();
 
-        void QueueEvent(const std::function<void()>& evt);
+        void Invoke(const std::function<void()>& evt);
 
     protected:
         Scene();
@@ -63,7 +65,7 @@ namespace Gx
         bool Input(const sf::Event& ev) override;
 
     private:
-        bool IsVisible() const override { return true; }
+        [[nodiscard]] bool IsVisible() const override { return true; }
         void SetVisible(const bool visible) override {}
 
         void SetDirector(SceneDirector& director);
@@ -73,10 +75,11 @@ namespace Gx
 
         mutable sf::View m_view{};
 
-        SceneDirector*         m_director{nullptr};
-        std::set<Presentable*> m_presentables;
+        SceneDirector*            m_director{nullptr};
+        std::vector<Presentable*> m_presentables;
 
         std::optional<sf::Event> m_lastInput{};
+        std::mutex m_mutex;
         std::queue<std::function<void()>> m_events{};
 
         bool m_initialized{};

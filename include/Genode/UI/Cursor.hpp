@@ -42,15 +42,15 @@ namespace Gx
         explicit Cursor(const sf::Texture& texture, sf::Vector2u hotspot = sf::Vector2u());
         explicit Cursor(const sf::Image& image, sf::Vector2u hotspot = sf::Vector2u());
 
-        bool IsEnabled() const;
+        [[nodiscard]] bool IsEnabled() const;
 
         void SetEnabled(bool enabled);
 
         void Register(Type type, const sf::Texture& texture, sf::Vector2u hotspot = sf::Vector2u());
         void Register(Type type, const sf::Image& image, sf::Vector2u hotspot = sf::Vector2u());
 
-        const sf::Cursor& GetHandle(Type type = Type::Arrow) const;
-        Type GetLastRetrievedHandleType() const;
+        [[nodiscard]] const sf::Cursor& GetHandle(Type type = Type::Arrow) const;
+        [[nodiscard]] Type GetLastRetrievedHandleType() const;
 
         bool Scale(float scale);
 

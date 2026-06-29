@@ -27,18 +27,18 @@ namespace Gx
         List(int verticalCount, float verticalSpacing);
         List(int verticalCount, float verticalSpacing, int horizontalCount, float horizontalSpacing);
 
-        Order GetOrder() const;
+        [[nodiscard]] Order GetOrder() const;
         void SetOrder(Order order);
 
         void SetVerticalRepeat(int count, float spacing);
         void SetHorizontalRepeat(int count, float spacing);
 
-        int GetRepeatCount() const;
-        int GetVerticalCount() const;
-        int GetHorizontalCount() const;
+        [[nodiscard]] int GetRepeatCount() const;
+        [[nodiscard]] int GetVerticalCount() const;
+        [[nodiscard]] int GetHorizontalCount() const;
 
-        float GetVerticalSpacing() const;
-        float GetHorizontalSpacing() const;
+        [[nodiscard]] float GetVerticalSpacing() const;
+        [[nodiscard]] float GetHorizontalSpacing() const;
 
         void AddLayout(const LayoutItem& layout);
         void ClearLayouts();
@@ -47,9 +47,9 @@ namespace Gx
         void OnChildRemove(Node& node) override;
 
     protected:
-        bool IsSpaceAvailable() const;
+        [[nodiscard]] bool IsSpaceAvailable() const;
 
-        sf::Vector2f GetNextItemPosition() const;
+        [[nodiscard]] sf::Vector2f GetNextItemPosition() const;
 
         void IncreaseSpacingCounter();
         void DecreaseSpacingCounter();

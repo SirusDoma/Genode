@@ -4,6 +4,7 @@
 
 #include <Genode/Graphics/Shapes/Rectangle.hpp>
 #include <Genode/Graphics/Text.hpp>
+#include <Genode/UI/Label.hpp>
 
 namespace Gx
 {
@@ -14,12 +15,13 @@ namespace Gx
         InputField(const Font& font, const sf::String& string, unsigned int characterSize = 30, const sf::FloatRect& bounds = sf::FloatRect());
         InputField(Font&& font, const sf::String& string, unsigned int characterSize = 30, sf::FloatRect bounds = sf::FloatRect()) = delete;
 
-        sf::Vector2f FindCharacterPosition(std::size_t index) const;
-        sf::FloatRect GetLocalBounds() const override;
+        [[nodiscard]] sf::Vector2f FindCharacterPosition(std::size_t index) const;
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
         virtual void SetLocalBounds(sf::FloatRect bounds);
 
         void SetString(const sf::String& string);
         void SetFont(const Font& font);
+        void AddFallbackFont(const Font& font) const;
         void SetMasked(bool masked);
         void SetNumericModeEnabled(bool enabled);
 
@@ -34,35 +36,35 @@ namespace Gx
         void SetOutlineColor(const sf::Color& color);
         void SetOutlineThickness(float thickness);
 
-        const sf::String& GetString() const;
-        const Font* GetFont() const;
-        bool IsMasked() const;
-        bool IsNumericMode() const;
+        [[nodiscard]] const sf::String& GetString() const;
+        [[nodiscard]] const Font* GetFont() const;
+        [[nodiscard]] bool IsMasked() const;
+        [[nodiscard]] bool IsNumericMode() const;
 
-        unsigned int GetCharacterSize() const;
-        float GetLetterSpacing() const;
-        float GetLineSpacing() const;
-        std::uint32_t GetStyle() const;
+        [[nodiscard]] unsigned int GetCharacterSize() const;
+        [[nodiscard]] float GetLetterSpacing() const;
+        [[nodiscard]] float GetLineSpacing() const;
+        [[nodiscard]] std::uint32_t GetStyle() const;
 
-        const sf::Color& GetColor() const override;
-        const sf::Color& GetHighlightBackColor() const;
-        const sf::Color& GetHighlightTextColor() const;
-        const sf::Color& GetOutlineColor() const;
-        float GetOutlineThickness() const;
+        [[nodiscard]] const sf::Color& GetColor() const override;
+        [[nodiscard]] const sf::Color& GetHighlightBackColor() const;
+        [[nodiscard]] const sf::Color& GetHighlightTextColor() const;
+        [[nodiscard]] const sf::Color& GetOutlineColor() const;
+        [[nodiscard]] float GetOutlineThickness() const;
 
-        bool IsPermanentFocus() const;
+        [[nodiscard]] bool IsPermanentFocus() const;
         void SetPermanentFocusEnabled(bool enable);
 
-        bool IsFocused() const override;
+        [[nodiscard]] bool IsFocused() const override;
         void SetFocus(bool focus) override;
 
-        unsigned int GetMaximumTextLength() const;
+        [[nodiscard]] unsigned int GetMaximumTextLength() const;
         void SetMaximumTextLength(unsigned int maxLength);
         void SetTextEnteredCallback(std::function<void(InputField&, const sf::String&)> callback);
 
         void Select(size_t index, int selectionLength);
         void SelectAll();
-        sf::String GetSelectedText() const;
+        [[nodiscard]] sf::String GetSelectedText() const;
 
         size_t Insert(size_t index, std::uint32_t unicode, int selectionLength = 0);
         size_t Erase(size_t index, int length);
@@ -71,7 +73,7 @@ namespace Gx
         bool IsNextCharacterFit();
 
         void SetControlState(const State& state) override;
-        State GetControlState() const override;
+        [[nodiscard]] State GetControlState() const override;
 
         void Update(double delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
@@ -95,7 +97,7 @@ namespace Gx
 
             explicit Caret(InputField& instance);
             void Reset(bool visible = false);
-            const Rectangle& GetHighlight() const;
+            [[nodiscard]] const Rectangle& GetHighlight() const;
             void SetHighlightColor(sf::Color color);
 
             void Update(double delta) override;
@@ -111,7 +113,7 @@ namespace Gx
             double    m_elapsed;
         };
 
-        Text  m_text;
+        Label m_label;
         Caret m_caret;
         sf::Color m_highlightColor;
         sf::FloatRect m_bounds;

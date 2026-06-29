@@ -4,10 +4,67 @@
 
 #include <SFML/Window/Clipboard.hpp>
 
+namespace
+{
+    bool IsSeparator(const std::uint32_t ch)
+    {
+        if (ch == U' ' || ch == U'\t')
+            return true;
+
+        static constexpr std::u32string_view separators = U".,;:!?()[]{}/\\-_@#%&*";
+        return separators.find(static_cast<char32_t>(ch)) != std::u32string_view::npos;
+    }
+
+    size_t FindWordStart(const sf::String& str, const size_t from)
+    {
+        size_t left = from;
+        while (left > 0)
+        {
+            const auto ch = str[left - 1];
+            if (IsSeparator(ch))
+                left--;
+            else
+                break;
+        }
+        while (left > 0)
+        {
+            const auto ch = str[left - 1];
+            if (!IsSeparator(ch))
+                left--;
+            else
+                break;
+        }
+        return left;
+    }
+
+    size_t FindWordEnd(const sf::String& str, const size_t from)
+    {
+        size_t right = from;
+        const size_t size = str.getSize();
+        while (right < size)
+        {
+            const auto ch = str[right];
+            if (IsSeparator(ch))
+                right++;
+            else
+                break;
+        }
+        while (right < size)
+        {
+            const auto ch = str[right];
+            if (!IsSeparator(ch))
+                right++;
+            else
+                break;
+        }
+        return right;
+    }
+}
+
 namespace Gx
 {
     InputField::InputField() :
-        m_text(),
+        m_label(),
         m_caret(*this),
         m_bounds(),
         m_maxLength(),
@@ -19,7 +76,7 @@ namespace Gx
     }
 
     InputField::InputField(const Font& font, const sf::String& string, const unsigned int characterSize, const sf::FloatRect& bounds) :
-        m_text(font, string, characterSize),
+        m_label(font, string, characterSize),
         m_caret(*this),
         m_bounds(bounds),
         m_maxLength(0),
@@ -29,7 +86,7 @@ namespace Gx
         m_state(State::Normal)
     {
         if (m_bounds == sf::FloatRect())
-            m_bounds = m_text.GetLocalBounds();
+            m_bounds = m_label.GetLocalBounds();
 
         InputField::SetHighlightBackColor(sf::Color::White);
         SetHighlightTextColor(sf::Color::Black);
@@ -47,22 +104,27 @@ namespace Gx
 
     sf::Vector2f InputField::FindCharacterPosition(const std::size_t index) const
     {
-        return m_text.FindCharacterPosition(index);
+        return m_label.FindCharacterPosition(index);
     }
 
     void InputField::SetString(const sf::String& string)
     {
-        m_text.SetString(string);
+        m_label.SetString(string);
     }
 
     void InputField::SetFont(const Font& font)
     {
-        m_text.SetFont(font);
+        m_label.SetFont(font);
+    }
+
+    void InputField::AddFallbackFont(const Font& font) const
+    {
+        m_label.AddFallbackFont(font);
     }
 
     void InputField::SetMasked(const bool masked)
     {
-        m_text.SetMasked(masked);
+        m_label.SetMasked(masked);
     }
 
     void InputField::SetNumericModeEnabled(const bool enabled)
@@ -77,27 +139,27 @@ namespace Gx
 
     void InputField::SetCharacterSize(const unsigned int size)
     {
-        m_text.SetCharacterSize(size);
+        m_label.SetCharacterSize(size);
     }
 
     void InputField::SetLineSpacing(const float spacingFactor)
     {
-        m_text.SetLetterSpacing(spacingFactor);
+        m_label.SetLetterSpacing(spacingFactor);
     }
 
     void InputField::SetLetterSpacing(const float spacingFactor)
     {
-        m_text.SetLetterSpacing(spacingFactor);
+        m_label.SetLetterSpacing(spacingFactor);
     }
 
     void InputField::SetStyle(const std::uint32_t style)
     {
-        m_text.SetStyle(style);
+        m_label.SetStyle(style);
     }
 
     void InputField::SetColor(const sf::Color& color)
     {
-        m_text.SetColor(color);
+        m_label.SetColor(color);
     }
 
     void InputField::SetHighlightBackColor(const sf::Color& color)
@@ -112,27 +174,27 @@ namespace Gx
 
     void InputField::SetOutlineColor(const sf::Color& color)
     {
-        m_text.SetOutlineColor(color);
+        m_label.SetOutlineColor(color);
     }
 
     void InputField::SetOutlineThickness(const float thickness)
     {
-        m_text.SetOutlineThickness(thickness);
+        m_label.SetOutlineThickness(thickness);
     }
 
     const sf::String& InputField::GetString() const
     {
-        return m_text.GetString();
+        return m_label.GetString();
     }
 
     const Font* InputField::GetFont() const
     {
-        return m_text.GetFont();
+        return m_label.GetFont();
     }
 
     bool InputField::IsMasked() const
     {
-        return m_text.IsMasked();
+        return m_label.IsMasked();
     }
 
     bool InputField::IsNumericMode() const
@@ -142,27 +204,27 @@ namespace Gx
 
     unsigned int InputField::GetCharacterSize() const
     {
-        return m_text.GetCharacterSize();
+        return m_label.GetCharacterSize();
     }
 
     float InputField::GetLetterSpacing() const
     {
-        return m_text.GetLetterSpacing();
+        return m_label.GetLetterSpacing();
     }
 
     float InputField::GetLineSpacing() const
     {
-        return m_text.GetLineSpacing();
+        return m_label.GetLineSpacing();
     }
 
     std::uint32_t InputField::GetStyle() const
     {
-        return m_text.GetStyle();
+        return m_label.GetStyle();
     }
 
     const sf::Color& InputField::GetColor() const
     {
-        return m_text.GetColor();
+        return m_label.GetColor();
     }
 
     const sf::Color& InputField::GetHighlightBackColor() const
@@ -177,12 +239,12 @@ namespace Gx
 
     const sf::Color& InputField::GetOutlineColor() const
     {
-        return m_text.GetOutlineColor();
+        return m_label.GetOutlineColor();
     }
 
     float InputField::GetOutlineThickness() const
     {
-        return m_text.GetOutlineThickness();
+        return m_label.GetOutlineThickness();
     }
 
     unsigned int InputField::GetMaximumTextLength() const
@@ -202,18 +264,18 @@ namespace Gx
 
     bool InputField::IsNextCharacterFit()
     {
-        const auto string = m_text.GetString();
+        const auto string = m_label.GetString();
         auto index  = m_caret.Index;
 
         if (m_caret.SelectionLength != 0)
             index = static_cast<int>(Erase(index - 1, m_caret.SelectionLength));
 
-        auto newString = m_text.GetString();
+        auto newString = m_label.GetString();
         newString.insert(index, " ");
-        m_text.SetString(newString);
-        const bool fit = m_text.GetLocalBounds().size.x <= m_bounds.size.x;
+        m_label.SetString(newString);
+        const bool fit = m_label.GetLocalBounds().size.x <= m_bounds.size.x;
 
-        m_text.SetString(string);
+        m_label.SetString(string);
         return fit;
     }
 
@@ -243,17 +305,20 @@ namespace Gx
         else
             return {};
 
-        return m_text.GetString().substring(index, std::abs(length));
+        return m_label.GetString().substring(index, std::abs(length));
     }
 
     size_t InputField::Insert(size_t index, const std::uint32_t unicode, const int selectionLength)
     {
-        // backspace, tab, enter, etc
-        if (unicode <= 31)
+
+        if (unicode <= 31 || // backspace, tab, enter, etc
+            unicode == 127)  // ctrl+backspace
+        {
             return index;
+        }
 
         // Max length validation
-        if (m_maxLength > 0 && selectionLength == 0 && m_text.GetString().getSize() >= m_maxLength)
+        if (m_maxLength > 0 && selectionLength == 0 && m_label.GetString().getSize() >= m_maxLength)
             return index;
 
         // Max visual bounds validation
@@ -262,9 +327,9 @@ namespace Gx
             if (m_caret.SelectionLength != 0)
                 index = Erase(index - 1, selectionLength);
 
-            auto string = m_text.GetString();
+            auto string = m_label.GetString();
             string.insert(index, sf::String(static_cast<char32_t>(unicode)));
-            m_text.SetString(string);
+            m_label.SetString(string);
 
             return ++index;
         }
@@ -281,9 +346,9 @@ namespace Gx
         else
             return index;
 
-        auto str = m_text.GetString();
+        auto str = m_label.GetString();
         str.erase(index, std::abs(length));
-        m_text.SetString(str);
+        m_label.SetString(str);
 
         return index;
     }
@@ -366,7 +431,7 @@ namespace Gx
         if (m_caret.SelectionLength != 0)
             surface.Render(m_caret.GetHighlight(), states);
 
-        surface.Render(m_text, states);
+        surface.Render(m_label, states);
         if (IsFocused() && IsEnabled())
             surface.Render(m_caret, states);
 
@@ -383,7 +448,7 @@ namespace Gx
         size_t selectIndex = m_caret.Index;
 
         const auto bounds = GetGlobalBounds();
-        for (size_t index = 0; index <= m_text.GetString().getSize(); index++)
+        for (size_t index = 0; index <= m_label.GetString().getSize(); index++)
         {
             const float distance = std::abs((FindCharacterPosition(index).x + bounds.position.x) - static_cast<float>(ev.position.x));
             if (minDistance == -1 || distance < minDistance)
@@ -435,36 +500,104 @@ namespace Gx
             if (m_caret.Index == 0 && m_caret.SelectionLength == 0)
                 return;
 
-            const int length    = m_caret.SelectionLength;
-            m_caret.Index = static_cast<int>(Erase(m_caret.Index - 1, length == 0 ? -1 : length));
+            int eraseLength = m_caret.SelectionLength == 0 ? -1 :  m_caret.SelectionLength;
+            if (m_caret.SelectionLength == 0 && control)
+            {
+                if (!ev.shift)
+                {
+                    const size_t left = FindWordStart(m_label.GetString(), static_cast<size_t>(m_caret.Index));
+                    eraseLength = -static_cast<int>(static_cast<size_t>(m_caret.Index) - left);
+                }
+                else
+                {
+                    eraseLength = -static_cast<int>(static_cast<size_t>(m_caret.Index));
+                }
+            }
+
+            m_caret.Index = static_cast<int>(Erase(m_caret.Index - 1, eraseLength));
             m_caret.SelectionLength = 0;
         }
         else if (ev.code == sf::Keyboard::Key::Delete)
         {
-            if (m_caret.Index >= m_text.GetString().getSize())
+            if (m_caret.Index >= m_label.GetString().getSize())
                 return;
 
-            auto str = m_text.GetString();
-            str.erase(m_caret.Index);
+            if (control && ev.shift)
+            {
+                const size_t from = static_cast<size_t>(m_caret.Index);
+                const size_t end  = m_label.GetString().getSize();
+                const int delta   = static_cast<int>(end - from);
+                if (delta <= 0)
+                    return;
 
-            m_text.SetString(str);
-            m_caret.SelectionLength = 0;
+                m_caret.Index = static_cast<int>(Erase(m_caret.Index - 1, delta));
+                m_caret.SelectionLength = 0;
+            }
+            else if (control)
+            {
+                const size_t from = static_cast<size_t>(m_caret.Index);
+                const size_t right = FindWordEnd(m_label.GetString(), from);
+                const int delta = static_cast<int>(right - from);
+                if (delta <= 0)
+                    return;
+
+                m_caret.Index = static_cast<int>(Erase(m_caret.Index - 1, delta));
+                m_caret.SelectionLength = 0;
+            }
+            else
+            {
+                auto str = m_label.GetString();
+                str.erase(m_caret.Index);
+
+                m_label.SetString(str);
+                m_caret.SelectionLength = 0;
+            }
         }
         else if (ev.code == sf::Keyboard::Key::Enter)
         {
             // Trim front and back string from whitespaces
-            const sf::String string = StringHelper::Trim(m_text.GetString());
+            const sf::String string = StringHelper::Trim(m_label.GetString());
             if (!string.isEmpty() && m_onTextEntered)
                 m_onTextEntered(*this, string);
 
-            m_text.SetString("");
+            m_label.SetString("");
             m_caret.SelectionLength = 0;
         }
         else if (control || ev.shift)
         {
             if (ev.shift)
             {
-                if (ev.code == sf::Keyboard::Key::Left)
+                if (control && ev.code == sf::Keyboard::Key::Left)
+                {
+                    if (m_caret.Index <= 0)
+                        return;
+
+                    const size_t from = static_cast<size_t>(m_caret.Index);
+                    const size_t left = FindWordStart(m_label.GetString(), from);
+                    const int delta = static_cast<int>(from - left);
+
+                    if (delta <= 0)
+                        return;
+
+                    m_caret.Index -= delta;
+                    m_caret.SelectionLength += delta;
+                }
+                else if (control && ev.code == sf::Keyboard::Key::Right)
+                {
+                    if (m_caret.Index >= m_label.GetString().getSize())
+                        return;
+
+                    const size_t from = static_cast<size_t>(m_caret.Index);
+                    const size_t right = FindWordEnd(m_label.GetString(), from);
+                    const int delta = static_cast<int>(right - from);
+
+                    if (delta <= 0)
+                        return;
+
+                    m_caret.Index += delta;
+                    m_caret.SelectionLength -= delta;
+                }
+                else if (ev.code == sf::Keyboard::Key::Left)
                 {
                     if (m_caret.Index <= 0)
                         return;
@@ -474,7 +607,7 @@ namespace Gx
                 }
                 else if (ev.code == sf::Keyboard::Key::Right)
                 {
-                    if (m_caret.Index >= m_text.GetString().getSize())
+                    if (m_caret.Index >= m_label.GetString().getSize())
                         return;
 
                     m_caret.Index++;
@@ -495,10 +628,27 @@ namespace Gx
                 }
                 else if (ev.code == sf::Keyboard::Key::V)
                 {
-                    std::string input = sf::Clipboard::getString();
-                    auto string = sf::String::fromUtf8(input.begin(), input.end());
+                    auto string = sf::Clipboard::getString();
                     for (size_t index = 0; index < string.getSize(); index++)
                         m_caret.Index = static_cast<int>(Insert(m_caret.Index, string[index]));
+                }
+                else if (ev.code == sf::Keyboard::Key::A)
+                {
+                    SelectAll();
+                }
+                else if (!ev.shift && ev.code == sf::Keyboard::Key::Left)
+                {
+                    const size_t left = FindWordStart(m_label.GetString(), static_cast<size_t>(m_caret.Index));
+
+                    m_caret.Index = static_cast<int>(left);
+                    m_caret.SelectionLength = 0;
+                }
+                else if (!ev.shift && ev.code == sf::Keyboard::Key::Right)
+                {
+                    const size_t right = FindWordEnd(m_label.GetString(), static_cast<size_t>(m_caret.Index));
+
+                    m_caret.Index = static_cast<int>(right);
+                    m_caret.SelectionLength = 0;
                 }
             }
         }
@@ -506,13 +656,13 @@ namespace Gx
         {
             m_caret.Index--;
             m_caret.SelectionLength = 0;
-            m_text.SetColor(m_text.GetColor());
+            m_label.SetColor(m_label.GetColor());
         }
         else if (ev.code == sf::Keyboard::Key::Right)
         {
             m_caret.Index++;
             m_caret.SelectionLength = 0;
-            m_text.SetColor(m_text.GetColor());
+            m_label.SetColor(m_label.GetColor());
         }
         else
             return;
@@ -554,13 +704,13 @@ namespace Gx
         if (m_caret.SelectionLength < 0)
             start += m_caret.SelectionLength;
 
-        m_text.SetColor(m_text.GetColor());
+        m_label.SetColor(m_label.GetColor());
         if (m_caret.SelectionLength != 0)
         {
-            for (size_t index = 0; index < m_text.GetString().getSize(); index++)
+            for (size_t index = 0; index < m_label.GetString().getSize(); index++)
             {
                 if (index >= start && index < start + std::abs(m_caret.SelectionLength))
-                    m_text.SetColor(m_highlightColor, index);
+                    m_label.SetColor(m_highlightColor, index);
             }
         }
     }

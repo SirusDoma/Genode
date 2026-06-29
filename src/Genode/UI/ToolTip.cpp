@@ -1,5 +1,7 @@
 #include <Genode/UI/ToolTip.hpp>
 
+#include <cmath>
+
 namespace Gx
 {
     ToolTip::ToolTip() :
@@ -172,8 +174,10 @@ namespace Gx
         Label::Invalidate();
 
         const auto bounds = Text::GetLocalBounds();
-        m_rectangle.SetSize(sf::Vector2f(bounds.size.x, bounds.size.y) + (m_padding * 2.f));
-        m_rectangle.SetPosition(sf::Vector2f(0, m_padding.y * 1.5f));
+        const auto size   = sf::Vector2f(bounds.size.x, bounds.size.y) + (m_padding * 2.f);
+
+        m_rectangle.SetSize({ std::ceil(size.x), std::ceil(size.y) });
+        m_rectangle.SetPosition(sf::Vector2f(0, std::ceil(m_padding.y * 1.5f)));
         m_rectangle.SetColor(m_fillColor);
         m_rectangle.SetOutlineColor(m_outlineColor);
         m_rectangle.SetOutlineThickness(m_outlineThickness);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Genode/IO/Json.hpp>
+#include <Genode/IO/IOException.hpp>
 #include <Genode/IO/Resource.hpp>
 #include <Genode/IO/ResourceLoader.hpp>
 #include <Genode/IO/ResourceLoaderFactory.hpp>
@@ -11,3 +13,7 @@
 #include <Genode/IO/FileSystem/LocalFileSystem.hpp>
 #include <Genode/IO/Archive.hpp>
 #include <Genode/IO/ResourceManager.hpp>
+#include <Genode/IO/FontManager.hpp>
+#include <Genode/IO/Loaders/FontLoader.hpp>
+#include <Genode/IO/Loaders/SoundBufferLoader.hpp>
+#include <Genode/IO/Loaders/TextureLoader.hpp>

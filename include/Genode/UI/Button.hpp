@@ -16,20 +16,19 @@ namespace Gx
     public:
         struct Frame
         {
-            sf::IntRect  TexCoords = sf::IntRect();
-            sf::Color    Color     = sf::Color::White;
-            sf::Vector2f Bounds    = sf::Vector2f();
+            sf::IntRect TexCoords = sf::IntRect();
+            sf::IntRect Bounds    = sf::IntRect();
         };
 
         Button() = default;
         explicit Button(const sf::Texture& texture);
 
-        const sf::Color& GetColor() const override;
+        [[nodiscard]] const sf::Color& GetColor() const override;
         void SetColor(const sf::Color& color) override;
 
-        const sf::Texture* GetTexture() const;
-        const sf::IntRect& GetTextCoords() const;
-        sf::FloatRect GetLocalBounds() const override;
+        [[nodiscard]] const sf::Texture* GetTexture() const;
+        [[nodiscard]] const sf::IntRect& GetTextCoords() const;
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
 
         void SetTexture(const sf::Texture& texture);
         void SetFrame(Control::State state, const Frame& frame);
@@ -37,10 +36,10 @@ namespace Gx
         void PerformClick();
 
     protected:
-        virtual Button::Frame GetCurrentFrame() const;
+        [[nodiscard]] virtual Button::Frame GetCurrentFrame() const;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
-        Frame GetStateFrame(Control::State state) const;
+        [[nodiscard]] Frame GetStateFrame(Control::State state) const;
         void Invalidate() override;
 
      private:

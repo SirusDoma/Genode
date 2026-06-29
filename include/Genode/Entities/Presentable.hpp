@@ -41,8 +41,14 @@ namespace Gx
         Parent() = default;
         virtual ~Parent() = default;
 
-        virtual bool IsPresenting(Presentable& presentable) const = 0;
-        virtual void Present(Presentable& presentable, const PresentationContext& context = PresentationContext::Default)
+        [[nodiscard]] virtual bool IsPresenting(Presentable& presentable) const = 0;
+
+        void Present(Presentable& presentable)
+        {
+            Present(presentable, PresentationContext::Default);
+        }
+
+        virtual void Present(Presentable& presentable, const PresentationContext& context)
         {
             presentable.OnPresented(*this, context);
         };

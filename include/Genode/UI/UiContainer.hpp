@@ -19,10 +19,12 @@ namespace Gx
     public:
         UiContainer();
 
-        sf::FloatRect GetLocalBounds() const override;
+        [[nodiscard]] sf::FloatRect GetGlobalBounds() const override;
+
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
         virtual void SetLocalBounds(const sf::FloatRect& bounds);
 
-        virtual bool IsBatchingEnabled() const;
+        [[nodiscard]] virtual bool IsBatchingEnabled() const;
         virtual void SetBatchingEnabled(bool batchingEnabled);
 
         void Apply(const std::function<void(Control&)>& fun) const;
@@ -37,7 +39,8 @@ namespace Gx
         void Invalidate() override;
 
     private:
-        sf::FloatRect m_computedBounds;
+        sf::FloatRect m_computedLocalBounds;
+        sf::FloatRect m_computedGlobalBounds;
         sf::FloatRect m_localBounds;
         bool m_useBatching{false};
     };

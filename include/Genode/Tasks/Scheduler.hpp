@@ -12,7 +12,7 @@ namespace Gx
         Scheduler(std::size_t repeatCount, sf::Time schedule, const std::function<void(const Scheduler&, double)> &update);
         Scheduler(sf::Time duration, sf::Time interval, const std::function<void(const Scheduler&, double)> &update);
 
-        static Scheduler Once(sf::Time schedule, const std::function<void(const Scheduler&, double)> &update);
+        [[nodiscard]] static Scheduler Once(sf::Time schedule, const std::function<void(const Scheduler&, double)> &update);
 
         [[nodiscard]] sf::Time GetDuration() const;
         [[nodiscard]] sf::Time GetInterval() const;

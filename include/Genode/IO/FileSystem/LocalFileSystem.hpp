@@ -12,14 +12,14 @@ namespace Gx
     class LocalFileSystem final : public FileSystemController
     {
     public:
-        static LocalFileSystem& Instance();
+        [[nodiscard]] static LocalFileSystem& Instance();
 
-        static std::string GetApplicationDirectoryPath();
+        [[nodiscard]] static std::string GetApplicationDirectoryPath();
 
-        static std::string GetWorkingDirectory();
+        [[nodiscard]] static std::string GetWorkingDirectory();
         static void SetWorkingDirectory(const std::string& inputPath);
 
-        static std::vector<std::string> GetAssetPaths();
+        [[nodiscard]] static std::vector<std::string> GetAssetPaths();
         static void AddAssetPath(const std::string& path);
 
         [[nodiscard]] std::string GetFileName(const std::string& fullPath, bool withExtension = true) const;

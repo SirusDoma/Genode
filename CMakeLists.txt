@@ -64,12 +64,27 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
 
 # -- SFML
 set(SFML_USE_STATIC_STD_LIBS TRUE)
-fetchcontent_declare(
+FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 3.0.1
 )
-fetchcontent_makeavailable(SFML)
+FetchContent_MakeAvailable(SFML)
+
+# -- JSON
+FetchContent_Declare(
+    json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+FetchContent_MakeAvailable(json)
+
+# -- FMT
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt
+    GIT_TAG        11.0.2
+)
+FetchContent_MakeAvailable(fmt)
 
 # Application includes
 target_include_directories(${LIBRARY_NAME} PRIVATE src)
@@ -80,5 +95,12 @@ target_include_directories(${LIBRARY_NAME} PRIVATE extlibs/headers)
 target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window)
 
 # Link FreeType
-find_package(Freetype REQUIRED)
+find_package(Freetype)
 target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype)
+
+# Link JSON
+target_link_libraries(${LIBRARY_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
+# Link fmt
+target_link_libraries(${LIBRARY_NAME} PRIVATE fmt::fmt)
+

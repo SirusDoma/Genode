@@ -3,6 +3,7 @@
 #include <Genode/IO/ResourceContainer.hpp>
 #include <SFML/System/InputStream.hpp>
 #include <string>
+#include <variant>
 
 namespace Gx
 {
@@ -12,42 +13,46 @@ namespace Gx
     public:
         static const ResourceContext Default;
 
-        explicit ResourceContext(std::string  id);
-        ResourceContext(std::string  id, ResourceManager& resources, CacheMode mode = CacheMode::None);
+        explicit ResourceContext(const std::string& id);
+        ResourceContext(const std::string& id, ResourceManager& resources, CacheMode mode = CacheMode::None);
 
         virtual ~ResourceContext() = default;
 
         template<typename Ctx>
-        static std::enable_if_t<std::is_base_of_v<ResourceContext, Ctx>, Ctx>
+        [[nodiscard]] static std::enable_if_t<std::is_base_of_v<ResourceContext, Ctx>, Ctx>
         Rebind(const Ctx& ctx, const std::string& id);
 
         template<typename Ctx>
-        std::enable_if_t<std::is_base_of_v<ResourceContext, Ctx>, Ctx>
+        [[nodiscard]] std::enable_if_t<std::is_base_of_v<ResourceContext, Ctx>, Ctx>
         Rebind(const Ctx& ctx, ResourceManager& resources);
 
         [[nodiscard]] const std::string& GetID() const;
         [[nodiscard]] bool Available() const;
 
         template<typename R>
-        R* Find(const std::string& id) const;
+        [[nodiscard]] R* Find(const std::string& id) const;
 
         template<typename R>
-        R& Acquire(const std::string& id) const;
+        [[nodiscard]] R& Acquire(const std::string& id) const;
 
         template<typename R>
-        R& Acquire(const std::string& id, const std::string& path) const;
+        [[nodiscard]] R& Acquire(const std::string& id, const std::string& path) const;
 
         template<typename R>
-        R& Acquire(const std::string& id, const void* data, std::size_t dataSize) const;
+        [[nodiscard]] R& Acquire(const std::string& id, const void* data, std::size_t dataSize) const;
 
         template<typename R>
-        R& Acquire(const std::string& id, sf::InputStream& stream) const;
+        [[nodiscard]] R& Acquire(const std::string& id, sf::InputStream& stream) const;
 
         template<typename R>
         R& Store(const std::string& id, R& resource) const;
 
         template<typename R>
         R& Store(const std::string& id, ResourcePtr<R> resource) const;
+
+        [[nodiscard]] const std::unordered_map<std::string, std::string>& GetProperties() const;
+        [[nodiscard]] std::optional<std::string> GetProperty(const std::string& name) const;
+        void SetProperty(const std::string& name, const std::string& value);
 
         [[nodiscard]] CacheMode GetCacheMode() const;
 
@@ -61,10 +66,11 @@ namespace Gx
         [[nodiscard]] ResourceManager* GetResourceManager() const;
 
     private:
-        ResourceContext(std::string  id, ResourceManager* resources, CacheMode mode = CacheMode::None);
+        ResourceContext(const std::string& id, ResourceManager* resources, CacheMode mode = CacheMode::None);
 
         std::string m_id;
         CacheMode m_cacheMode = CacheMode::None;
+        std::unordered_map<std::string, std::string> m_properties;
         ResourceManager* m_resources;
     };
 }

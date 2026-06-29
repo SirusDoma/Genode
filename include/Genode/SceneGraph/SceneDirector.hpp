@@ -44,15 +44,15 @@ namespace Gx
         void Resize(const sf::Vector2u& size) const;
         bool Close() const;
 
-        Context& GetContext() const;
-        Scene& GetPresentingScene() const;
+        [[nodiscard]] Context& GetContext() const;
+        [[nodiscard]] Scene& GetPresentingScene() const;
 
-        const sf::View& GetView() const;
-        const sf::View& GetDefaultView() const;
+        [[nodiscard]] const sf::View& GetView() const;
+        [[nodiscard]] const sf::View& GetDefaultView() const;
         void SetView(const sf::View& view);
 
         template<typename T>
-        bool IsPresenting() const;
+        [[nodiscard]] bool IsPresenting() const;
 
         template<typename T, typename... Args>
         std::enable_if_t<std::is_base_of_v<Scene, T>, void>
@@ -97,7 +97,7 @@ namespace Gx
 
         void Reset();
 
-        Application& GetApplication() const;
+        [[nodiscard]] Application& GetApplication() const;
 
         template<typename T>
         std::enable_if_t<std::is_base_of_v<Scene, T>, void>

@@ -39,7 +39,7 @@ namespace Gx
     std::enable_if_t<std::is_base_of_v<Scene, T>, void>
     SceneDirector::Register()
     {
-        m_deserializers[typeid(T)] = [this] (const ResourceContext&) -> ResourcePtr<T> { return GetContext().Create<T>(); };
+        m_deserializers[typeid(T)] = SceneDeserializer<T>([this] (const ResourceContext&) -> ResourcePtr<T> { return GetContext().Instantiate<T>(); });
     }
 
     template<typename T>
@@ -79,7 +79,7 @@ namespace Gx
 
         if (!scene)
         {
-            if constexpr (Constructible<T>::value)
+            if constexpr (std::is_default_constructible_v<T>)
             {
                 Register<T>();
                 return Present<T>(context, std::forward<Args>(args)...);
@@ -209,6 +209,6 @@ namespace Gx
     template<typename T>
     bool SceneDirector::IsPresenting() const
     {
-        return m_currentScene && typeid(*m_currentScene.get()) == typeid(T);
+        return m_currentScene && dynamic_cast<T*>(m_currentScene.get()) != nullptr;
     }
 }

@@ -42,11 +42,11 @@ namespace Gx
 
             explicit Iterator(SoundGroup& soundGroup, bool end = false);
 
-            IteratorHandle begin() const;
-            IteratorHandle end() const;
+            [[nodiscard]] IteratorHandle begin() const;
+            [[nodiscard]] IteratorHandle end() const;
 
-            bool             operator!=(const Iterator& other) const;
-            sf::SoundSource& operator*() const;
+            [[nodiscard]] bool             operator!=(const Iterator& other) const;
+            [[nodiscard]] sf::SoundSource& operator*() const;
             Iterator&        operator++();
 
         private:
@@ -68,6 +68,6 @@ namespace Gx
         std::unordered_set<sf::SoundSource*> m_sources;
     };
 
-    SoundGroup::Iterator begin(SoundGroup& soundGroup);
-    SoundGroup::Iterator end(SoundGroup& soundGroup);
+    [[nodiscard]] SoundGroup::Iterator begin(SoundGroup& soundGroup);
+    [[nodiscard]] SoundGroup::Iterator end(SoundGroup& soundGroup);
 }

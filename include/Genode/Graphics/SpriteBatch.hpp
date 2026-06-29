@@ -142,8 +142,8 @@ namespace Gx
                     const RenderStates&     states
         ) override;
 
-        const sf::View& GetDefaultView() const override;
-        const sf::View& GetView() const override;
+        [[nodiscard]] const sf::View& GetDefaultView() const override;
+        [[nodiscard]] const sf::View& GetView() const override;
         void SetView(const sf::View& view) override;
 
         ////////////////////////////////////////////////////////////

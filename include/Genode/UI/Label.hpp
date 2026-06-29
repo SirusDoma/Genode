@@ -3,6 +3,8 @@
 #include <Genode/UI/Control.hpp>
 #include <Genode/Graphics/Text.hpp>
 
+#include <unordered_map>
+
 namespace Gx
 {
     class Label : public virtual Control, public virtual Text
@@ -12,20 +14,30 @@ namespace Gx
 
         using Text::Text;
 
-        sf::FloatRect GetLocalBounds() const override;
+        void AddFallbackFont(const Font& font) const;
 
-        Alignment GetAlignment() const;
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
+        virtual void SetLocalBounds(const sf::FloatRect& bounds);
+
+        [[nodiscard]] Alignment GetAlignment() const;
         void SetAlignment(Alignment alignment);
 
     protected:
         void Update(double delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
+        void OnFontChanged(const Gx::Font&) const override;
+        void OnGeometryUpdating() const override;
         void OnGeometryUpdated() const override;
+
         void Invalidate() override;
 
     private:
         mutable bool m_alignmentUpdated = false;
+        mutable const Font* m_defaultFont{nullptr};
+        mutable std::unordered_set<const Font*> m_fallbackFonts{};
+
         Alignment m_alignment = Alignment::None;
+        sf::FloatRect m_bounds{};
     };
 }

@@ -7,19 +7,71 @@
 #include <cmath>
 #include <regex>
 
+#ifndef _WIN32
+#include <cxxabi.h>
+#endif
+
 namespace Gx
 {
     class StringHelper
     {
     public:
-        static sf::String ToPascalCase(const sf::String& input)
+        template<typename T>
+        [[nodiscard]] static std::string ToString(const T& value)
+        {
+            if constexpr (std::is_same_v<T, std::string>)
+            {
+                return value;
+            }
+            else if constexpr (std::is_same_v<T, sf::String>)
+            {
+                return value.toAnsiString();
+            }
+            else
+            {
+                std::stringstream ss;
+                ss << value;
+
+                return ss.str();
+            }
+        }
+
+        [[nodiscard]] static std::vector<std::string> Split(const std::string& input, const char delimiter = ' ')
+        {
+            std::vector<std::string> tokens;
+            std::istringstream iss(input);
+            std::string token;
+
+            while (std::getline(iss, token, delimiter))
+                tokens.push_back(token);
+
+            return tokens;
+        }
+
+        [[nodiscard]] static bool EqualsCaseInsensitive(const std::string& a, const std::string& b)
+        {
+            if (a.length() != b.length())
+                return false;
+
+            for (size_t i = 0; i < a.length(); ++i)
+            {
+                if (std::tolower(a[i]) != std::tolower(b[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] static sf::String ToPascalCase(const sf::String& input)
         {
             sf::String result = "";
             bool transform = true;
 
             for (size_t i = 0; i < input.getSize(); i++)
             {
-                char curChar = input[i];
+                const char curChar = input[i];
                 if (transform)
                 {
                     result += sf::String(static_cast<char>(std::toupper(curChar)));
@@ -33,51 +85,52 @@ namespace Gx
             return result;
         }
 
-        static sf::String TrimStart(const sf::String& input)
+        [[nodiscard]] static sf::String TrimStart(const sf::String& input)
         {
             sf::String result = input;
-            for (size_t i = 0; i < result.getSize(); i++)
+            if (input.getSize() == 1 && std::isspace(static_cast<unsigned char>(input[0])))
+                return sf::String();
+
+            for (size_t i = 0; i < input.getSize(); i++)
             {
-                if (result[i] != L'\0' && result[i] != L' ' && result[i] != L'\t' && result[i] != L'\n')
-                {
-                    result = input.substring(i);
-                    break;
-                }
+                if (!std::isspace(static_cast<unsigned char>(input[i])))
+                    return input.substring(i);
             }
 
-            return result;
+            return sf::String();
         }
 
-        static sf::String TrimEnd(const sf::String& input)
+        [[nodiscard]] static sf::String TrimEnd(const sf::String& input)
         {
-            sf::String result = input;
-            for (size_t i = result.getSize() - 1; i > 0 && i < result.getSize(); i--)
+            if (input.getSize() == 1 && std::isspace(static_cast<unsigned char>(input[0])))
+                return sf::String();
+
+            for (size_t i = input.getSize() - 1; i < input.getSize(); i--)
             {
-                if (result[i] != L'\0' && result[i] != L' ' && result[i] != L'\t' && result[i] != L'\n')
-                {
-                    result = input.substring(0, i + 1);
-                    break;
-                }
+                if (!std::isspace(static_cast<unsigned char>(input[i])))
+                    return input.substring(0, i + 1);
             }
 
-            return result;
+            return sf::String();
         }
 
-        static sf::String Trim(const sf::String& input)
+        [[nodiscard]] static sf::String Trim(const sf::String& input)
         {
             return TrimEnd(TrimStart(input));
         }
 
-        static bool IsGlobMatch(const std::string& input, const sf::String& pattern)
+        [[nodiscard]] static bool IsGlobMatch(const std::string& input, const sf::String& pattern, const bool caseSensitive = true)
         {
+            static const std::string reserved = R"(\.^$|()[]{}*+?)";
+
             std::string regexPattern;
-            for (char c : pattern)
+            for (const char c : pattern)
             {
                 if (c == '*')
                     regexPattern += ".*";
                 else if (c == '?')
                     regexPattern += ".";
-                else if (std::ispunct(c))
+                else if (reserved.find(c) != std::string::npos)
                 {
                     regexPattern += "\\";
                     regexPattern += c;
@@ -86,25 +139,28 @@ namespace Gx
                     regexPattern += c;
             }
 
-            auto regex = std::regex(regexPattern);
+            const auto flags = caseSensitive ? std::regex_constants::ECMAScript
+                                             : std::regex_constants::ECMAScript | std::regex_constants::icase;
+
+            const auto regex = std::regex(regexPattern, flags);
             return std::regex_match(input, regex);
         }
 
-        static sf::String RemoveExtension(const std::string& fileName)
+        [[nodiscard]] static std::string RemoveExtension(const std::string& fileName)
         {
             if (fileName == "." || fileName == "..")
                 return fileName;
 
-            auto pos = fileName.find_last_of("\\/.");
+            const auto pos = fileName.find_last_of("\\/.");
             if (pos != std::string::npos && fileName[pos] == '.')
                 return fileName.substr(0, pos);
 
             return fileName;
         }
 
-        static sf::String ToString(const int value, const int totalLength = 0)
+        [[nodiscard]] static sf::String ToString(const int value, const int totalLength = 0)
         {
-            int threshold = static_cast<int>(pow(10, totalLength));
+            const int threshold = static_cast<int>(pow(10, totalLength));
             if (value < threshold)
             {
                 sf::String result = std::to_string(value);
@@ -117,39 +173,73 @@ namespace Gx
             return std::to_string(value);
         }
 
-        static sf::String ToString(const float value, const int precision = 0)
+        [[nodiscard]] static sf::String ToString(const float value, const int precision = 0)
         {
             if (precision == 0)
                 return std::to_string(value);
 
             std::ostringstream oss;
-            oss << std::fixed << std::setprecision(2) << value;
+            oss << std::fixed << std::setprecision(precision) << value;
 
             return oss.str();
         }
 
         template<typename T>
-        static sf::String GetTypeName(T& obj, const bool withNamespace = true)
+        [[nodiscard]] static std::string GetTypeName([[maybe_unused]] T& obj, const bool withNamespace = true)
         {
             auto name = std::string(typeid(obj).name());
-            if (const auto pos = name.find(' '); pos != std::string::npos)
-                name = name.substr(pos + 1);
+
+#ifndef _WIN32
+            int status = -1;
+            const auto buffer = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
+
+            name = std::string(buffer);
+            free(buffer);
+
+            if (status == -1)
+                name = std::string(typeid(T).name());
+#endif
 
             if (!withNamespace)
             {
                 if (const auto pos = name.find_last_of(':'); pos != std::string::npos)
                     name = name.substr(pos + 1);
+            }
+
+            if (name.find(' ') != std::string::npos)
+            {
+                std::istringstream iss(name);
+                std::vector<std::string> parts;
+                std::string word;
+
+                while (iss >> word) {
+                    parts.push_back(word);
+                }
+
+                if (StartsWith(parts.back(), "*") || StartsWith(parts.back(), "&"))
+                    parts.pop_back();
+
+                return parts.back();
             }
 
             return name;
         }
 
         template<typename T>
-        static sf::String GetTypeName(const bool withNamespace = true)
+        [[nodiscard]] static std::string GetTypeName(const bool withNamespace = true)
         {
             auto name = std::string(typeid(T).name());
-            if (const auto pos = name.find(' '); pos != std::string::npos)
-                name = name.substr(pos + 1);
+
+#ifndef _WIN32
+            int status = -1;
+            const auto buffer = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
+
+            name = std::string(buffer);
+            free(buffer);
+
+            if (status == -1)
+                name = std::string(typeid(T).name());
+#endif
 
             if (!withNamespace)
             {
@@ -157,14 +247,39 @@ namespace Gx
                     name = name.substr(pos + 1);
             }
 
+            if (name.find(' ') != std::string::npos)
+            {
+                std::istringstream iss(name);
+                std::vector<std::string> parts;
+                std::string word;
+
+                while (iss >> word) {
+                    parts.push_back(word);
+                }
+
+                if (StartsWith(parts.back(), "*") || StartsWith(parts.back(), "&"))
+                    parts.pop_back();
+
+                return parts.back();
+            }
+
             return name;
         }
 
-        static sf::String GetTypeName(const std::type_info& type, const bool withNamespace = true)
+        [[nodiscard]] static std::string GetTypeName(const std::type_info& type, const bool withNamespace = true)
         {
             auto name = std::string(type.name());
-            if (const auto pos = name.find(' '); pos != std::string::npos)
-                name = name.substr(pos + 1);
+
+#ifndef _WIN32
+            int status = -1;
+            const auto buffer = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
+
+            name = std::string(buffer);
+            free(buffer);
+
+            if (status == -1)
+                name = std::string(type.name());
+#endif
 
             if (!withNamespace)
             {
@@ -172,12 +287,44 @@ namespace Gx
                     name = name.substr(pos + 1);
             }
 
+            if (name.find(' ') != std::string::npos)
+            {
+                std::istringstream iss(name);
+                std::vector<std::string> parts;
+                std::string word;
+
+                while (iss >> word) {
+                    parts.push_back(word);
+                }
+
+                if (StartsWith(parts.back(), "*") || StartsWith(parts.back(), "&"))
+                    parts.pop_back();
+
+                return parts.back();
+            }
+
             return name;
         }
 
-        static bool StartsWith(const std::string& string, const std::string& prefix)
+        [[nodiscard]] static bool StartsWith(const std::string& string, const std::string& prefix)
         {
             return string.rfind(prefix, 0) != std::string::npos;
+        }
+
+        [[nodiscard]] static bool EndsWith(const std::string& string, const std::string& suffix)
+        {
+            return suffix.size() <= string.size() && string.rfind(suffix, string.size() - suffix.size()) == string.size() - suffix.size();
+        }
+
+        [[nodiscard]] static sf::String Unquote(const sf::String& string)
+        {
+            if (string.getSize() >= 2 && string[0] == '\"' && string[string.getSize() - 1] == '\"')
+                return string.substring(1, string.getSize() - 2);
+
+            if (string.getSize() >= 2 && string[0] == '\'' && string[string.getSize() - 1] == '\'')
+                return string.substring(1, string.getSize() - 2);
+
+            return string;
         }
     };
 }

@@ -4,6 +4,8 @@
 #include <Genode/UI/UiContainer.hpp>
 #include <Genode/Graphics/Sprite.hpp>
 
+#include <SFML/System/String.hpp>
+
 #include <functional>
 
 namespace Gx
@@ -11,7 +13,7 @@ namespace Gx
     struct DialogPresentationContext : GraphicalPresentationContext
     {
         bool UseBackdrop{false};
-        std::string Prompt{};
+        sf::String Prompt{};
     };
 
     class Scene;
@@ -30,7 +32,7 @@ namespace Gx
         Dialog(Dialog&& other) noexcept;
         Dialog& operator=(Dialog&& other) noexcept;
 
-        Parent* GetPresentableParent() const;
+        [[nodiscard]] Parent* GetPresentableParent() const;
 
         using Control::GetGlobalBounds;
         using Sprite::GetLocalBounds;
@@ -44,13 +46,16 @@ namespace Gx
         using Sprite::GetColor;
         using Sprite::SetColor;
 
-        bool IsShown() const;
-        bool IsAccepted() const;
+        using Sprite::GetBlendMode;
+        using Sprite::SetBlendMode;
 
-        Label* GetLabel() const;
-        std::string GetPromptString() const;
-        Button* GetAcceptButton() const;
-        Button* GetCancelButton() const;
+        [[nodiscard]] bool IsShown() const;
+        [[nodiscard]] bool IsAccepted() const;
+
+        [[nodiscard]] Label* GetLabel() const;
+        [[nodiscard]] std::string GetPromptString() const;
+        [[nodiscard]] Button* GetAcceptButton() const;
+        [[nodiscard]] Button* GetCancelButton() const;
 
         void SetLabel(Label& label);
         void SetPromptString(const std::string& prompt);

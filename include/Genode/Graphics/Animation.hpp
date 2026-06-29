@@ -26,10 +26,10 @@ namespace Gx
         struct Frame
         {
             sf::IntRect                 TexCoords;
-            std::optional<sf::Vector2f> Origin;
-            std::optional<sf::Vector2f> Position;
-            std::optional<float>        Rotation;
-            std::optional<sf::Vector2f> Scale;
+            std::optional<sf::Vector2f> Origin    = std::nullopt;
+            std::optional<sf::Vector2f> Position  = std::nullopt;
+            std::optional<float>        Rotation  = std::nullopt;
+            std::optional<sf::Vector2f> Scale     = std::nullopt;
         };
 
         Animation();
@@ -38,22 +38,22 @@ namespace Gx
         template<typename... Args>
         void AddFrame(const Frame& first, const Args&... args);
         void AddFrame(const Frame& frame);
-        unsigned int GetFrameCount() const;
-        Frame& GetFrame(unsigned int index);
+        [[nodiscard]] unsigned int GetFrameCount() const;
+        [[nodiscard]] Frame& GetFrame(unsigned int index);
 
-        const sf::Time& GetDuration() const;
+        [[nodiscard]] const sf::Time& GetDuration() const;
         void SetDuration(const sf::Time& duration);
 
-        float GetSpeed() const;
+        [[nodiscard]] float GetSpeed() const;
         void SetSpeed(float speed);
 
-        unsigned int GetRepeatCount() const;
+        [[nodiscard]] unsigned int GetRepeatCount() const;
         void SetRepeatCount(unsigned int repeatCount);
 
-        bool IsLoop() const;
+        [[nodiscard]] bool IsLoop() const;
         void SetLoop(bool loop);
 
-        AnimationState GetState() const;
+        [[nodiscard]] AnimationState GetState() const;
         void SetAnimationCallback(const std::function<void(Animation &)> &animationCallback);
 
         virtual void Stop();

@@ -3,4 +3,5 @@
 #include <Genode/Utilities/StringHelper.hpp>
 #include <Genode/Utilities/Debugger.hpp>
 #include <Genode/Utilities/Randomizer.hpp>
-#include <Genode/Utilities/Reflection.hpp>
+#include <Genode/Utilities/Extensions.hpp>
+#include <Genode/Utilities/Endian.hpp>

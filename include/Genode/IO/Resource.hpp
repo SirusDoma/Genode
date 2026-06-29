@@ -12,7 +12,7 @@ namespace Gx
     using ResourcePtr = std::unique_ptr<R, ResourceDeleter<R>>;
 
     template<typename T, typename V>
-    std::enable_if_t<std::is_base_of_v<T, V>, ResourcePtr<T>>
+    [[nodiscard]] std::enable_if_t<std::is_base_of_v<T, V>, ResourcePtr<T>>
     Cast(ResourcePtr<V>&& target)
     {
         return ResourcePtr<T>(target.release(), [deleter = target.get_deleter()] (T* ptr)
@@ -22,7 +22,7 @@ namespace Gx
     }
 
     template<typename T, typename V>
-    std::enable_if_t<std::is_base_of_v<V, T>, ResourcePtr<T>>
+    [[nodiscard]] std::enable_if_t<std::is_base_of_v<V, T>, ResourcePtr<T>>
     Cast(ResourcePtr<V>&& target)
     {
         if (auto source = dynamic_cast<T*>(target.get()))

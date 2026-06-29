@@ -12,9 +12,8 @@ namespace
         static bool registered = false;
         if (!registered)
         {
-            Gx::FileSystem::Mount(Gx::LocalFileSystem::Instance());
-
             registered = true;
+            Gx::FileSystem::Mount(Gx::LocalFileSystem::Instance());
         }
     }
 }
@@ -113,8 +112,16 @@ namespace Gx
         throw ResourceAccessException(fileName, "File is not exists or not supported");
     }
 
+    bool FileSystem::IsMounted(const FileSystemController& fileSystem)
+    {
+        const auto it = std::find(m_controllers.begin(), m_controllers.end(), &fileSystem);
+        return it != m_controllers.end();
+    }
+
     void FileSystem::Mount(const FileSystemController& fileSystem)
     {
+        EnsureDefaultFileSystemsRegistered();
+
         m_controllers.push_back(&fileSystem);
     }
 

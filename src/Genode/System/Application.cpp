@@ -11,12 +11,12 @@
 
 namespace Gx
 {
-    Application::Application(std::string title, const sf::VideoMode& mode, const bool fullScreen, const sf::ContextSettings& settings)
+    Application::Application(const std::string& title, const sf::VideoMode& mode, const bool fullScreen, const sf::ContextSettings& settings)
         : Application(std::move(title), mode, sf::View({mode.size.x / 2.f, mode.size.y / 2.f}, {static_cast<float>(mode.size.x), static_cast<float>(mode.size.y)}), fullScreen)
     {
     }
 
-    Application::Application(std::string title, const sf::VideoMode& mode, const sf::View& view, const bool fullScreen, const sf::ContextSettings& settings) :
+    Application::Application(const std::string& title, const sf::VideoMode& mode, const sf::View& view, const bool fullScreen, const sf::ContextSettings& settings) :
         m_director(SceneDirector(*this)),
         m_context(),
         m_state(fullScreen ? sf::State::Fullscreen : sf::State::Windowed),
@@ -30,7 +30,6 @@ namespace Gx
         m_fullScreen(fullScreen),
         m_closeRequested(false)
     {
-        CreateMainWindow();
         ResourceLoaderFactory::BindContext(m_context);
     }
 
@@ -52,6 +51,9 @@ namespace Gx
 
             m_instance = this;
         }
+
+        // Re-create window to fix X11 icon bug
+        CreateMainWindow();
 
         // Bootstrap the game
         Boot();
@@ -226,6 +228,11 @@ namespace Gx
     {
     }
 
+    sf::VideoMode Application::GetVideoMode() const
+    {
+        return m_mode;
+    }
+
     void Application::OnInputReceived(sf::Event& ev)
     {
         // Re-map mouse coordinate
@@ -294,14 +301,17 @@ namespace Gx
             m_window->close();
 
         // Determine video mode to use
-        auto mode = m_mode;
         if (m_state == sf::State::Fullscreen)
         {
-            if (const auto fsModes = sf::VideoMode::getFullscreenModes(); !fsModes.empty())
-                mode = fsModes.front();
+            if (const auto& fsModes = sf::VideoMode::getFullscreenModes(); !fsModes.empty())
+                m_mode = fsModes.front();
             else
-                mode = GetDesktopVideoMode();
+                m_mode = GetDesktopVideoMode();
         }
+
+        // The internal video mode should be resolved at this point.
+        // Resolve video mode override made by custom application, if any.
+        auto mode = GetVideoMode();
 
         // Create/Re-create the window and apply window state.
         // No option to turn into exclusive fullscreen for now.

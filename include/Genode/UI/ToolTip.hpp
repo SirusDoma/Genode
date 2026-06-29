@@ -14,26 +14,26 @@ namespace Gx
         ToolTip(const Font& font, const sf::String& string, unsigned int characterSize = 30);
         ToolTip(Font&& font, const sf::String& string, unsigned int characterSize = 30) = delete;
 
-        sf::FloatRect GetLocalBounds() const override;
+        [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
 
         void Show(Control* parent);
         void Show(sf::Vector2f position, Alignment alignment = Alignment::Center);
         void Show();
         void Hide();
 
-        const sf::Time& GetDuration() const;
+        [[nodiscard]] const sf::Time& GetDuration() const;
         void SetDuration(const sf::Time& duration);
 
-        sf::Vector2f GetPadding() const;
+        [[nodiscard]] sf::Vector2f GetPadding() const;
         void SetPadding(const sf::Vector2f& padding);
 
-        const sf::Color& GetContainerColor() const;
+        [[nodiscard]] const sf::Color& GetContainerColor() const;
         void SetContainerColor(const sf::Color& fillColor);
 
-        const sf::Color& GetContainerOutlineColor() const;
+        [[nodiscard]] const sf::Color& GetContainerOutlineColor() const;
         void SetContainerOutlineColor(const sf::Color& outlineColor);
 
-        float GetContainerOutlineThickness() const;
+        [[nodiscard]] float GetContainerOutlineThickness() const;
         void SetContainerOutlineThickness(float outlineThickness);
 
     protected:
