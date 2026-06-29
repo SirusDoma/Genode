@@ -57,13 +57,10 @@ elseif(APPLE)
 else()
     # Libraries
     target_link_libraries(${LIBRARY_NAME} PRIVATE stdc++fs)
+    find_package(Freetype, QUIET)
 endif()
 
-# External Libs Sources and Flags
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
-
 # -- SFML
-set(SFML_USE_STATIC_STD_LIBS TRUE)
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
@@ -95,7 +92,6 @@ target_include_directories(${LIBRARY_NAME} PRIVATE extlibs/headers)
 target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window)
 
 # Link FreeType
-find_package(Freetype)
 target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype)
 
 # Link JSON
