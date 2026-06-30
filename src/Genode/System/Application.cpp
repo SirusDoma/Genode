@@ -300,18 +300,17 @@ namespace Gx
         if (m_window)
             m_window->close();
 
-        // Determine video mode to use
+        // Resolve video mode override made by custom application, if any.
+        auto mode = GetVideoMode();
+
+        // Re-override if it is full screen
         if (m_state == sf::State::Fullscreen)
         {
             if (const auto& fsModes = sf::VideoMode::getFullscreenModes(); !fsModes.empty())
-                m_mode = fsModes.front();
+                mode = fsModes.front();
             else
-                m_mode = GetDesktopVideoMode();
+                mode = GetDesktopVideoMode();
         }
-
-        // The internal video mode should be resolved at this point.
-        // Resolve video mode override made by custom application, if any.
-        auto mode = GetVideoMode();
 
         // Create/Re-create the window and apply window state.
         // No option to turn into exclusive fullscreen for now.
