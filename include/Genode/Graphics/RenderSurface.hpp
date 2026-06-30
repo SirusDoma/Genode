@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Genode/Graphics/RenderStates.hpp>
-#include <Genode/Graphics/VertexPool.hpp>
 
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
@@ -12,7 +11,6 @@
 namespace Gx
 {
     class Renderable;
-    class VertexSpan;
     class RenderSurface
     {
     public:
@@ -30,22 +28,16 @@ namespace Gx
                 Render(&vertices[0], vertices.getVertexCount(), vertices.getPrimitiveType(), states);
         }
 
-        void Render(const VertexSpan& span, const sf::PrimitiveType primitiveType, const RenderStates& states = RenderStates::Default)
-        {
-            if (span.size() > 0)
-                Render(&span.data()[0], span.size(), primitiveType, states);
-        }
-
-        virtual void Render(const sf::Vertex*   vertices,
-                            std::size_t         vertexCount,
-                            sf::PrimitiveType   type,
-                            const RenderStates& states = RenderStates::Default
+        virtual void Render(const sf::Vertex*       vertices,
+                            std::size_t       vertexCount,
+                            sf::PrimitiveType type,
+                            const RenderStates&     states = RenderStates::Default
         ) = 0;
 
         virtual void Render(const sf::VertexBuffer& vertexBuffer, const RenderStates& states = RenderStates::Default) = 0;
         virtual void Render(const sf::VertexBuffer& vertexBuffer,
-                            std::size_t             firstVertex,
-                            std::size_t             vertexCount,
+                            std::size_t       firstVertex,
+                            std::size_t       vertexCount,
                             const RenderStates&     states = RenderStates::Default
         ) = 0;
 
