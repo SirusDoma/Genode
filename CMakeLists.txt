@@ -25,15 +25,15 @@ file(GLOB_RECURSE HEADERS extlibs/headers/*.h)
 # Library
 add_library(${LIBRARY_NAME} STATIC ${SRCS} ${HEADERS})
 
-# Default flags
+# Default flags and params
 if (NOT CMAKE_BUILD_TYPE)
-    message("-- [Warning] CMAKE_BUILD_TYPE is not set. Falling back to Release")
     set(CMAKE_BUILD_TYPE "Release")
 endif()
-message("-- Build type: " ${CMAKE_BUILD_TYPE})
+if (NOT OUTPUT_DIR)
+    set(OUTPUT_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
+endif()
 
 # Output directory
-set(OUTPUT_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
 file(MAKE_DIRECTORY ${OUTPUT_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 set_target_properties(${LIBRARY_NAME} PROPERTIES
@@ -42,7 +42,6 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL     ${OUTPUT_DIR}
     ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTPUT_DIR}
 )
-message("-- Output Directory: " ${OUTPUT_DIR})
 
 if(WIN32)
     # Windows (Visual Studio) Compiler Output Flags
