@@ -36,7 +36,7 @@ namespace Gx
     {
     }
 
-    RenderStates::RenderStates(const sf::RenderStates& states, const unsigned int frameID, const double delta) :
+    RenderStates::RenderStates(const sf::RenderStates& states, const unsigned int frameID, const sf::Time& delta) :
         sf::RenderStates(states),
         FrameID(frameID),
         Delta(delta)

@@ -416,7 +416,7 @@ namespace Gx
         }
     }
 
-    void InputField::Update(const double delta)
+    void InputField::Update(const sf::Time& delta)
     {
         m_caret.Update(delta);
         Control::Update(delta);
@@ -756,9 +756,9 @@ namespace Gx
         return states;
     }
 
-    void InputField::Caret::Update(const double delta)
+    void InputField::Caret::Update(const sf::Time& delta)
     {
-        m_elapsed += delta;
+        m_elapsed += delta.asMilliseconds();
         if (m_elapsed >= BLINK_THRESHOLD)
         {
             m_elapsed = 0;

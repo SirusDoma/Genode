@@ -1,4 +1,4 @@
-﻿#include <Genode/SceneGraph/SceneDirector.hpp>
+#include <Genode/SceneGraph/SceneDirector.hpp>
 #include <Genode/SceneGraph/Scene.hpp>
 
 #include <Genode/System/Application.hpp>
@@ -92,7 +92,7 @@ namespace Gx
         return states;
     }
 
-    void SceneDirector::Update(const double delta)
+    void SceneDirector::Update(const sf::Time& delta)
     {
         Stage();
 

@@ -1,4 +1,4 @@
-﻿#include <Genode/SceneGraph/Scene.hpp>
+#include <Genode/SceneGraph/Scene.hpp>
 #include <Genode/SceneGraph/SceneDirector.hpp>
 #include <Genode/System/Application.hpp>
 
@@ -186,7 +186,7 @@ namespace Gx
         return states;
     }
 
-    void Scene::Update(const double delta)
+    void Scene::Update(const sf::Time& delta)
     {
         UpdatableContainer::Update(delta);
         TaskContainer::Update(delta);

@@ -47,7 +47,7 @@ namespace Gx
         void Emit() const;
 
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
     private:
         [[nodiscard]] VertexSpan Rent(std::size_t count) override;

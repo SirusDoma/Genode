@@ -1,4 +1,4 @@
-﻿#include <Genode/Tasks/Action.hpp>
+#include <Genode/Tasks/Action.hpp>
 
 namespace Gx
 {
@@ -7,7 +7,7 @@ namespace Gx
     {
     }
 
-    void Action::Update(const double delta)
+    void Action::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

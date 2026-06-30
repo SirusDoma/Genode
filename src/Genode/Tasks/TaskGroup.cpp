@@ -24,7 +24,7 @@ namespace Gx
         return *this;
     }
 
-    void TaskGroup::Update(const double delta)
+    void TaskGroup::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

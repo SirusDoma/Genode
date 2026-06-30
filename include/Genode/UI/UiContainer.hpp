@@ -31,7 +31,7 @@ namespace Gx
 
     protected:
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
         void OnControlClick(Control& sender, const sf::Event::MouseButtonReleased& ev) override;
         void OnKeyPressed(const sf::Event::KeyPressed& ev) override;

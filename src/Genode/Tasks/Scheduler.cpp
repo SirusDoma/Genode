@@ -64,13 +64,13 @@ namespace Gx
         m_count = 0;
     }
 
-    void Scheduler::Update(const double delta)
+    void Scheduler::Update(const sf::Time& delta)
     {
         Task::Update(delta);
         if (GetState() != TaskState::Running)
             return;
 
-        m_scheduleDelta += delta;
+        m_scheduleDelta += delta.asMilliseconds();
         if (m_callback && m_scheduleDelta >= m_interval.asMilliseconds())
         {
             m_callback(*this, m_scheduleDelta);

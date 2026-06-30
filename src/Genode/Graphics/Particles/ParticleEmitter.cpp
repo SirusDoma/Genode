@@ -82,11 +82,11 @@ namespace Gx
         m_particles.clear();
     }
 
-    void ParticleEmitter::Update(const double delta)
+    void ParticleEmitter::Update(const sf::Time& delta)
     {
         if (m_trigger && (!m_repeatCount.has_value() || m_emitCount <= *m_repeatCount))
         {
-            m_elapsed += delta;
+            m_elapsed += delta.asMilliseconds();
             if (sf::milliseconds(static_cast<std::int32_t>(m_elapsed)) >= m_interval)
                 Emit();
         }

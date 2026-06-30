@@ -1,4 +1,4 @@
-﻿#include <Genode/Tween/Move.hpp>
+#include <Genode/Tween/Move.hpp>
 
 namespace Gx
 {
@@ -18,7 +18,7 @@ namespace Gx
         m_diff   = m_end - m_start;
     }
 
-    void Move::Update(const double delta)
+    void Move::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

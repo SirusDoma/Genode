@@ -94,7 +94,7 @@ namespace Gx
     }
 
     ////////////////////////////////////////////////////////////
-    void SpriteBatch::Update(const double delta)
+    void SpriteBatch::Update(const sf::Time& delta)
     {
         UpdatableContainer::Update(delta);
     }

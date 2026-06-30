@@ -61,7 +61,7 @@ namespace Gx
         virtual bool OnAppClose();
 
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         bool Input(const sf::Event& ev) override;
 
     private:

@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/Label.hpp>
+#include <Genode/UI/Label.hpp>
 #include <Genode/Graphics/Font.hpp>
 
 #include <cmath>
@@ -27,7 +27,7 @@ namespace Gx
         Invalidate();
     }
 
-    void Label::Update(const double delta)
+    void Label::Update(const sf::Time& delta)
     {
         Control::Update(delta);
 

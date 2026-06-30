@@ -1,4 +1,4 @@
-﻿#include <Genode/Graphics/Animation.hpp>
+#include <Genode/Graphics/Animation.hpp>
 
 namespace Gx
 {
@@ -93,7 +93,7 @@ namespace Gx
         m_animationCallback = animationCallback;
     }
 
-    void Animation::Update(const double delta)
+    void Animation::Update(const sf::Time& delta)
     {
         if (m_frames.size() == 0)
         {
@@ -106,7 +106,7 @@ namespace Gx
 
         const bool trigger = m_state != AnimationState::Playing;
         m_state      = AnimationState::Playing;
-        m_elapsed   += sf::milliseconds(static_cast<int>(delta));
+        m_elapsed   += delta;
 
         if (trigger)
         {

@@ -1,4 +1,4 @@
-﻿#include <Genode/Tasks/Sequence.hpp>
+#include <Genode/Tasks/Sequence.hpp>
 #include <algorithm>
 
 namespace Gx
@@ -10,7 +10,7 @@ namespace Gx
         m_iterator = m_tasks.begin();
     }
 
-    void Sequence::Update(const double delta)
+    void Sequence::Update(const sf::Time& delta)
     {
         Task::Update(delta);
         if (m_tasks.empty())

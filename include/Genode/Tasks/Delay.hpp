@@ -15,7 +15,7 @@ namespace Gx
         void SetDuration(const sf::Time& duration);
 
     protected:
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
     private:
         sf::Time m_duration;

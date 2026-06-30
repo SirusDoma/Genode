@@ -7,7 +7,7 @@ namespace Gx
         m_batcher.SetBatchMode(batchMode);
     }
 
-    void RenderBatchContainer::Update(const double delta)
+    void RenderBatchContainer::Update(const sf::Time& delta)
     {
         m_batcher.Update(delta);
         UpdatableContainer::Update(delta);

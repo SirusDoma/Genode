@@ -1,4 +1,4 @@
-﻿#include <Genode/Tween/Rotate.hpp>
+#include <Genode/Tween/Rotate.hpp>
 
 namespace Gx
 {
@@ -18,7 +18,7 @@ namespace Gx
         m_diff  = m_end - m_start;
     }
 
-    void Rotate::Update(const double delta)
+    void Rotate::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

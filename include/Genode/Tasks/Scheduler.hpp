@@ -22,7 +22,7 @@ namespace Gx
 
     protected:
         void Initialize() override;
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
     private:
         sf::Time m_duration, m_interval;

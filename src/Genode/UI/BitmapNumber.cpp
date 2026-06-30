@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/BitmapNumber.hpp>
+#include <Genode/UI/BitmapNumber.hpp>
 #include <stack>
 
 namespace Gx
@@ -196,7 +196,7 @@ namespace Gx
         }
     }
 
-    void BitmapNumber::Update(const double delta)
+    void BitmapNumber::Update(const sf::Time& delta)
     {
         if (m_state == Animation::AnimationState::Initial || m_state == Animation::AnimationState::Playing)
         {
@@ -205,7 +205,7 @@ namespace Gx
                 if (m_texCoords[digit].size() <= 1)
                     continue;
 
-                m_elapseds[digit] += sf::milliseconds(static_cast<int>(delta));
+                m_elapseds[digit] += delta;
                 if (const auto frameTime = sf::milliseconds(m_durations[digit].asMilliseconds() / static_cast<int>(m_texCoords[digit].size())); m_elapseds[digit] >= frameTime)
                 {
                     if (m_state != Animation::AnimationState::Playing)

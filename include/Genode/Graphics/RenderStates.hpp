@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/System/Time.hpp>
 
 namespace Gx
 {
@@ -11,7 +12,7 @@ namespace Gx
         using sf::RenderStates::RenderStates;
 
         const unsigned int FrameID = 0;
-        const double Delta         = 0;
+        const sf::Time Delta       = sf::Time::Zero;
         float Layer                = 0.f;
 
         static const RenderStates Default;
@@ -24,7 +25,7 @@ namespace Gx
         RenderStates(const sf::Shader* shader);           // NOLINT(*-explicit-constructor)
         // ReSharper restore CppNonExplicitConvertingConstructor
 
-        explicit RenderStates(const sf::RenderStates& states, unsigned int frameID = 0, double delta = 0);
+        explicit RenderStates(const sf::RenderStates& states, unsigned int frameID = 0, const sf::Time& delta = sf::Time::Zero);
 
         RenderStates& operator=(const RenderStates& states);
 

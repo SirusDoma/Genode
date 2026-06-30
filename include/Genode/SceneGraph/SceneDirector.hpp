@@ -38,7 +38,7 @@ namespace Gx
         SceneDirector(Application& app, T&& scene, Args&&... args) = delete;
 
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         bool Input(const sf::Event& ev) override;
         void Focus(bool focused) const;
         void Resize(const sf::Vector2u& size) const;

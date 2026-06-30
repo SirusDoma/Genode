@@ -59,7 +59,7 @@ namespace Gx
         virtual void Stop();
         virtual void Reset();
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
     private:

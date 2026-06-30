@@ -1,4 +1,4 @@
-﻿#include <Genode/Tasks/Delay.hpp>
+#include <Genode/Tasks/Delay.hpp>
 
 namespace Gx
 {
@@ -28,7 +28,7 @@ namespace Gx
         m_duration = duration;
     }
 
-    void Delay::Update(const double delta)
+    void Delay::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

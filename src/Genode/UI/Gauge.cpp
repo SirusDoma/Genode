@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/Gauge.hpp>
+#include <Genode/UI/Gauge.hpp>
 
 namespace Gx
 {
@@ -175,7 +175,7 @@ namespace Gx
         }
     }
 
-    void Gauge::Update(const double delta)
+    void Gauge::Update(const sf::Time& delta)
     {
         Control::Update(delta);
 
@@ -183,7 +183,7 @@ namespace Gx
             return;
 
         m_animationState    = Animation::AnimationState::Playing;
-        m_animationElapsed += sf::milliseconds(static_cast<int>(delta));
+        m_animationElapsed += delta;
         if (const auto frameTime = sf::milliseconds(m_animationDuration.asMilliseconds() / static_cast<int>(m_frames.size())); m_animationElapsed >= frameTime)
         {
             m_animationElapsed %= frameTime;

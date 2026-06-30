@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/Image.hpp>
+#include <Genode/UI/Image.hpp>
 
 #include <cmath>
 
@@ -245,7 +245,7 @@ namespace Gx
         Invalidate();
     }
 
-    void Image::Update(const double delta)
+    void Image::Update(const sf::Time& delta)
     {
         Control::Update(delta);
     }

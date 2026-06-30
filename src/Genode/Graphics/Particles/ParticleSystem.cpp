@@ -85,7 +85,7 @@ namespace Gx
         return RenderableContainer::Render(surface, states);
     }
 
-    void ParticleSystem::Update(const double delta)
+    void ParticleSystem::Update(const sf::Time& delta)
     {
         for (const auto& emitter : m_emitters)
             emitter->Update(delta);

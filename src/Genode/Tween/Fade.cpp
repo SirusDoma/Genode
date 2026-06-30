@@ -1,4 +1,4 @@
-﻿#include <Genode/Tween/Fade.hpp>
+#include <Genode/Tween/Fade.hpp>
 
 namespace Gx
 {
@@ -18,7 +18,7 @@ namespace Gx
         m_diff  = static_cast<std::int16_t>(std::abs(m_start - m_end));
     }
 
-    void Fade::Update(const double delta)
+    void Fade::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

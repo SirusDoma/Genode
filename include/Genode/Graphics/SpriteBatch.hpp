@@ -114,7 +114,7 @@ namespace Gx
                    const sf::Transform&   transform = sf::Transform::Identity,
                    float                  layer     = 0.f);
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
         ////////////////////////////////////////////////////////////
         /// \brief Renders the batch to the render target

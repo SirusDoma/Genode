@@ -11,7 +11,7 @@ namespace Gx
         explicit Action(std::function<void()> callback);
 
     protected:
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
     private:
         std::function<void()> m_callback;

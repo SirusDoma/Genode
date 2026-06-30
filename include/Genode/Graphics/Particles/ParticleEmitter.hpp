@@ -39,7 +39,7 @@ namespace Gx
         virtual void Emit();
         void Clear();
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
         [[nodiscard]] std::vector<Particle*> GetParticles() const;
 

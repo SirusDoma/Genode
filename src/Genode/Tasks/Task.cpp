@@ -1,4 +1,4 @@
-﻿#include <Genode/Tasks/Task.hpp>
+#include <Genode/Tasks/Task.hpp>
 
 namespace Gx
 {
@@ -43,7 +43,7 @@ namespace Gx
         m_completeCallback = callback;
     }
 
-    void Task::Update(const double delta)
+    void Task::Update(const sf::Time& delta)
     {
         if (m_state == TaskState::Completed || m_state == TaskState::Stopped)
             return;
@@ -60,7 +60,7 @@ namespace Gx
             }
             case TaskState::Running:
             {
-                m_elapsed += sf::milliseconds(delta);
+                m_elapsed += delta;
                 break;
             }
             default:

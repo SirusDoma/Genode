@@ -75,7 +75,7 @@ namespace Gx
         void SetControlState(const State& state) override;
         [[nodiscard]] State GetControlState() const override;
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
         void OnControlStateChanged(Control& sender, State state) override;
@@ -100,7 +100,7 @@ namespace Gx
             [[nodiscard]] const Rectangle& GetHighlight() const;
             void SetHighlightColor(sf::Color color);
 
-            void Update(double delta) override;
+            void Update(const sf::Time& delta) override;
             RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
             void Invalidate();

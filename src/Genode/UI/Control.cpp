@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/Control.hpp>
+#include <Genode/UI/Control.hpp>
 #include <type_traits>
 
 namespace Gx
@@ -175,14 +175,14 @@ namespace Gx
         return RenderableContainer::Render(surface, states);
     }
 
-    void Control::Update(const double delta)
+    void Control::Update(const sf::Time& delta)
     {
         if (!IsEnabled())
             return;
 
         if (m_clicked)
         {
-            m_deltaClickDuration += delta;
+            m_deltaClickDuration += delta.asMilliseconds();
             if (m_deltaClickDuration > DOUBLE_CLICK_THRESHOLD)
             {
                 m_clicked = false;
@@ -192,7 +192,7 @@ namespace Gx
 
         if (GetControlState() == State::Active && m_onHoldClick)
         {
-            m_deltaHoldDuration += delta;
+            m_deltaHoldDuration += delta.asMilliseconds();
             if (m_deltaHoldDuration >= HOLD_CLICK_THRESHOLD)
             {
                 auto uiEvent = Event{false, GetControlState()};

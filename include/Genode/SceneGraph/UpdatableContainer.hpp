@@ -9,6 +9,6 @@ namespace Gx
     {
     protected:
         UpdatableContainer() = default;
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
     };
 }

@@ -54,7 +54,7 @@ namespace Gx
         [[nodiscard]] const std::function<void(Control&, Event&)>& GetDoubleClickCallback() const;
         [[nodiscard]] const std::function<void(Control&, Event&)>& GetScrollWheelCallback() const;
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
         bool Input(const sf::Event& ev) override;
 

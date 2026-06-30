@@ -1,4 +1,4 @@
-﻿#include <Genode/SceneGraph/TaskContainer.hpp>
+#include <Genode/SceneGraph/TaskContainer.hpp>
 #include <Genode/Tasks/Task.hpp>
 
 namespace Gx
@@ -21,7 +21,7 @@ namespace Gx
             // Run update before deleting
             if ((*it)->GetState() == TaskState::Running)
             {
-                (*it)->Update(0);
+                (*it)->Update(sf::Time::Zero);
                 (*it)->Stop();
             }
 
@@ -36,7 +36,7 @@ namespace Gx
             // Run update before deleting
             if (task->GetState() == TaskState::Running)
             {
-                task->Update(0);
+                task->Update(sf::Time::Zero);
                 task->Stop();
             }
         }
@@ -44,7 +44,7 @@ namespace Gx
         m_tasks.clear();
     }
 
-    void TaskContainer::Update(const double delta)
+    void TaskContainer::Update(const sf::Time& delta)
     {
         // Tasks can be added or removed to/from the list during the update
         // The container need to guarantee that:

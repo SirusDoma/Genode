@@ -12,7 +12,7 @@ namespace Gx
     public:
         Fade(Colorable& target, std::uint8_t opacity, const sf::Time& duration, MotionFunc motion = Motion::Linear);
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         void Complete() override;
         void Reset() override;
 

@@ -66,7 +66,7 @@ namespace Gx
         void SetFrame(unsigned int index);
 
     protected:
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
         void Invalidate() override;

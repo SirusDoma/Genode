@@ -11,7 +11,7 @@ namespace Gx
     public:
         Move(Transformable& target, sf::Vector2f position, const sf::Time& duration, MotionFunc motion = Motion::Linear);
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         void Complete() override;
         void Reset() override;
 

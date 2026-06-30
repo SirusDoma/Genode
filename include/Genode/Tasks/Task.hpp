@@ -30,7 +30,7 @@ namespace Gx
         virtual void Complete();
         virtual void Reset();
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
     protected:
         Task();

@@ -30,7 +30,7 @@ namespace Gx
         TaskGroup& Add(Task& task);
         TaskGroup& Remove(const Task& task);
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         void Stop() override;
         void Complete() override;
         void Reset() override;

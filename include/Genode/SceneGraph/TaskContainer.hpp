@@ -39,7 +39,7 @@ namespace Gx
         void StopAll();
 
     protected:
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
 
     private:
         TaskState m_state;

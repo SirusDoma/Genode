@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/UiContainer.hpp>
+#include <Genode/UI/UiContainer.hpp>
 #include <Genode/UI/RadioButton.hpp>
 #include <Genode/UI/InputField.hpp>
 
@@ -117,7 +117,7 @@ namespace Gx
         return Control::Render(surface, states);
     }
 
-    void UiContainer::Update(const double delta)
+    void UiContainer::Update(const sf::Time& delta)
     {
         if (m_useBatching)
             RenderBatchContainer::Update(delta);

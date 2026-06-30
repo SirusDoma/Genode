@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/List.hpp>
+#include <Genode/UI/List.hpp>
 
 #include <cmath>
 
@@ -143,7 +143,7 @@ namespace Gx
         }
     }
 
-    void List::Update(const double delta)
+    void List::Update(const sf::Time& delta)
     {
         UiContainer::Update(delta);
     }

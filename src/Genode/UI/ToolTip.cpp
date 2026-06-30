@@ -158,12 +158,12 @@ namespace Gx
         return Label::Render(surface, states);
     }
 
-    void ToolTip::Update(const double delta)
+    void ToolTip::Update(const sf::Time& delta)
     {
         Label::Update(delta);
 
         if (m_elapsed < m_duration)
-            m_elapsed += sf::milliseconds(delta);
+            m_elapsed += delta;
 
         if (IsVisible())
             Invalidate();

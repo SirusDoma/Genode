@@ -1,4 +1,4 @@
-﻿#include <Genode/System/Application.hpp>
+#include <Genode/System/Application.hpp>
 #include <Genode/System/Context.hpp>
 #include <Genode/SceneGraph/Scene.hpp>
 #include <Genode/SceneGraph/SceneDirector.hpp>
@@ -116,15 +116,15 @@ namespace Gx
             }
 
             // Calculate delta
-            const double now   = timer.getElapsedTime().asMilliseconds();
-            const double delta = initial ? 0 : now - last;
+            const double now     = timer.getElapsedTime().asMilliseconds();
+            const sf::Time delta = initial ? sf::Time::Zero : sf::milliseconds(static_cast<int>(now - last));
             last = now;
 
             // Update fps counter
             frames++;
 
             // Track the number of frames rendered in a second
-            fpsDelta += delta;
+            fpsDelta += delta.asMilliseconds();
             if (fpsDelta >= 1000)
             {
                 m_renderFreq = frames;
@@ -170,7 +170,7 @@ namespace Gx
         return m_director;
     }
 
-    void Application::Update(const double delta)
+    void Application::Update(const sf::Time& delta)
     {
         m_director.Update(delta);
     }

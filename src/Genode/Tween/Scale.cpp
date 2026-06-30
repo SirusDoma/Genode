@@ -1,4 +1,4 @@
-﻿#include <Genode/Tween/Scale.hpp>
+#include <Genode/Tween/Scale.hpp>
 #include <utility>
 
 namespace Gx
@@ -19,7 +19,7 @@ namespace Gx
         m_diff = m_end - m_start;
     }
 
-    void Scale::Update(const double delta)
+    void Scale::Update(const sf::Time& delta)
     {
         Task::Update(delta);
 

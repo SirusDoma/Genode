@@ -67,7 +67,7 @@ namespace Gx
         virtual void Boot() = 0;
         virtual int Shutdown() = 0;
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
         virtual void OnWindowCreated(sf::RenderWindow& window);

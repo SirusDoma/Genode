@@ -17,7 +17,7 @@ namespace Gx
         template<typename... Tasks, std::enable_if_t<std::conjunction_v<std::is_base_of<Task, std::decay_t<Tasks>>...>, int> = 1>
         explicit Sequence(const std::function<void()>& callback, Tasks&&... tasks);
 
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         void Complete() override;
         void Reset() override;
 

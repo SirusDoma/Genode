@@ -37,7 +37,7 @@ namespace Gx
         void SetContainerOutlineThickness(float outlineThickness);
 
     protected:
-        void Update(double delta) override;
+        void Update(const sf::Time& delta) override;
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
 
         void Invalidate() override;
