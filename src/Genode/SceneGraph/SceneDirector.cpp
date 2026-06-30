@@ -149,10 +149,10 @@ namespace Gx
         return true;
     }
 
-    void SceneDirector::ProcessEvents() const
+    void SceneDirector::ProcessDelegates() const
     {
         if (m_currentScene)
-            m_currentScene->ProcessEvents();
+            m_currentScene->ProcessDelegates();
     }
 
     void SceneDirector::Focus(const bool focused) const

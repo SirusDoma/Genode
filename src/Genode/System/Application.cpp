@@ -145,7 +145,7 @@ namespace Gx
             m_window->display();
 
             // Execute post-processing events
-            m_director.ProcessEvents();
+            m_director.ProcessDelegates();
 
             // Mark initial frame has been processed
             initial = false;

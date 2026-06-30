@@ -93,7 +93,7 @@ namespace Gx
 
         bool Dismiss(const ResourceContext& context);
 
-        void ProcessEvents() const;
+        void ProcessDelegates() const;
 
         void Reset();
 

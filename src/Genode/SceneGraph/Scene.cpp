@@ -150,18 +150,18 @@ namespace Gx
     {
         auto lock = std::lock_guard(m_mutex);
         if (evt)
-            m_events.push(evt);
+            m_delegates.push(evt);
     }
 
-    void Scene::ProcessEvents()
+    void Scene::ProcessDelegates()
     {
         auto lock = std::lock_guard(m_mutex);
 
         const auto& director = GetDirector();
-        while (!m_events.empty())
+        while (!m_delegates.empty())
         {
-            auto event = m_events.front();
-            m_events.pop();
+            auto event = m_delegates.front();
+            m_delegates.pop();
 
             if (event)
                 event();

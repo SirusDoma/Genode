@@ -71,7 +71,7 @@ namespace Gx
         void SetDirector(SceneDirector& director);
         void SetContext(Context&& context);
 
-        void ProcessEvents();
+        void ProcessDelegates();
 
         mutable sf::View m_view{};
 
@@ -80,7 +80,7 @@ namespace Gx
 
         std::optional<sf::Event> m_lastInput{};
         std::mutex m_mutex;
-        std::queue<std::function<void()>> m_events{};
+        std::queue<std::function<void()>> m_delegates{};
 
         bool m_initialized{};
         std::optional<Context> m_context;
