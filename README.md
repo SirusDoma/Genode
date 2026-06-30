@@ -47,21 +47,44 @@ This framework was initially designed by a single developer in a limited scope, 
 That being said, there are certainly faster 2D game frameworks/engines out there that are faster and more capable in handling bigger scope in more sophisticated/intuitive/elegant way. However, the goal is to speed up my game development process. If you find yourself in a similar situation, consider give Genode a try.
 
 # Integration
-This framework was directly added into the game source tree and has not been tested to built and included separately.
+This framework can be either added into the game source tree directly as an additional CMake target or built and included separately.
+
+## Repository Structure ##
+
+| Directory | Contents                                                                                                                     |
+|-----------|------------------------------------------------------------------------------------------------------------------------------|
+| bin       | Final build compilation output, categorized by OS and build config (e.g: `bin/windows/Debug/`). Does not include any assets. |
+| build     | CMake build directory and object files that generated during compilation.                                                    |
+| extlibs   | External libraries                                                                                                           |
+| include   | Headers directory                                                                                                            |
+| src       | Source code directory                                                                                                        |
 
 ## Compiling the project
-Use CMake to build the static library and include the headers inside [`include`](/include) directory to your game project.
+Use CMake to build the library and include the headers inside [`include`](/include) directory to your game project.
 
 ```shell
 cmake -B ./build -DCMAKE_BUILD_TYPE=Release
 cmake --build ./build --config Release
 ```
 
-You can find the compilation output in [`bin`](/bin) folder.
+> [!Note]
+> Set `OUTPUT_DIR` flag in your cmake to override the compilation output location.
+> See [Configuring your SFML build](https://www.sfml-dev.org/tutorials/3.1/getting-started/build-from-source/#configuring-your-sfml-build) for more options to configure the SFML build used by Genode.
+
+You can find the compilation output in [`bin`](/bin) folder which you can use to link against your project.
+
+The project is fully relies on [CMake](https://cmake.org/), and it makes use of [`FetchContent`](https://cmake.org/cmake/help/latest/module/FetchContent.html) to manage the dependencies.  
+No additional setup or commands are required to build the project other than standard cmake build.
+
+List of dependencies:
+- [SFML](https://github.com/SFML/SFML)
+- [freetype2](https://freetype.org/)
+- [fmt](https://github.com/fmtlib/fmt)
+- [nlohmann_json](https://github.com/nlohmann/json)
 
 # Documentation
 
-Please refers to the [wiki](https://github.com/SirusDoma/Genode/wiki) for the Documentation.
+Please refer to the [wiki](https://github.com/SirusDoma/Genode/wiki) for the Documentation.
 
 # License
 
