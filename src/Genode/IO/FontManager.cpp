@@ -32,13 +32,6 @@ namespace Gx
 {
     namespace
     {
-        ResourcePtr<std::vector<std::uint8_t>> WrapBytes(std::vector<std::uint8_t> bytes)
-        {
-            return ResourcePtr<std::vector<std::uint8_t>>(
-                new std::vector<std::uint8_t>(std::move(bytes)),
-                [](std::vector<std::uint8_t>* p) { delete p; });
-        }
-
         std::string NormalizeKey(const std::string_view nameOrPath)
         {
             std::string key{nameOrPath};
@@ -48,29 +41,6 @@ namespace Gx
 
             std::transform(key.begin(), key.end(), key.begin(), [](const unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
             return key;
-        }
-
-        std::optional<std::vector<std::uint8_t>> ReadAllBytes(const std::string& filePath)
-        {
-            if (!FileSystem::Contains(filePath))
-                return std::nullopt;
-
-            const auto info = FileSystem::GetFileInfo(filePath);
-            if (!info)
-                return std::nullopt;
-
-            const auto sizeOpt = FileSystem::GetFileSize(filePath);
-            if (!sizeOpt.has_value())
-                return std::nullopt;
-
-            std::vector<std::uint8_t> data;
-            data.resize(sizeOpt.value());
-            const auto read = FileSystem::ReadFile(filePath, data.data(), data.size());
-            if (!read.has_value())
-                return std::nullopt;
-
-            data.resize(read.value());
-            return data.empty() ? std::nullopt : std::optional{std::move(data)};
         }
 
         std::optional<std::string> ResolveFontPath(const std::string& nameOrPath)
@@ -353,12 +323,12 @@ namespace Gx
         if (!path)
             return nullptr;
 
-        auto bytes = ReadAllBytes(*path);
-        if (!bytes)
+        auto bytes = FileSystem::ReadFile(*path);
+        if (bytes.empty())
             return nullptr;
 
         std::scoped_lock lock(m_mutex);
-        const auto& ref = m_cache.Store(key, WrapBytes(std::move(*bytes)));
+        const auto& ref = m_cache.Store(key, std::make_unique<FontData>(std::move(bytes)));
         sf::MemoryInputStream stream(ref.data(), ref.size());
         return std::make_unique<sf::Font>(stream);
     }
@@ -404,7 +374,7 @@ namespace Gx
         return GetData(key);
     }
 
-    bool FontManager::Store(const std::string& key, std::vector<std::uint8_t> bytes)
+    bool FontManager::Store(const std::string& key, FontData bytes)
     {
         if (bytes.empty())
             return false;
@@ -414,7 +384,7 @@ namespace Gx
         if (m_cache.Find(norm))
             return false;
 
-        m_cache.Store(norm, WrapBytes(std::move(bytes)));
+        m_cache.Store(norm, std::make_unique<FontData>(std::move(bytes)));
         return true;
     }
 

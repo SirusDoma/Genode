@@ -4,7 +4,7 @@
 
 #include <SFML/Graphics/Font.hpp>
 
-#include <cstdint>
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
@@ -17,6 +17,8 @@ namespace Gx
     class FontManager
     {
     public:
+        using FontData = std::vector<std::byte>;
+
         FontManager() = default;
 
         [[nodiscard]] std::unique_ptr<sf::Font> Create(const std::string& nameOrPath);
@@ -25,12 +27,12 @@ namespace Gx
         [[nodiscard]] std::optional<std::pair<const void*, std::size_t>> GetData(const std::string& key);
         [[nodiscard]] std::optional<std::pair<const void*, std::size_t>> GetDefaultData();
 
-        bool Store(const std::string& key, std::vector<std::uint8_t> bytes);
+        bool Store(const std::string& key, FontData bytes);
 
         void Clear();
 
     private:
         mutable std::mutex m_mutex;
-        ResourceContainer<std::vector<std::uint8_t>> m_cache;
+        ResourceContainer<FontData> m_cache;
     };
 }
