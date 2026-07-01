@@ -34,6 +34,7 @@ namespace Gx
         [[nodiscard]] std::vector<std::unique_ptr<FileInfo>> GetFileEntries() const override { throw Gx::NotSupportedException(); }
 
         std::optional<std::size_t> ReadFile(const std::string& fileName, void* data, std::size_t size) const override;
+        [[nodiscard]] std::vector<std::byte> ReadFile(const std::string& fileName) const override;
         void WriteFile(const std::string& fileName, const void* data, std::size_t size) override;
 
         [[nodiscard]] std::optional<std::size_t> GetFileSize(const std::string& fileName) const override;

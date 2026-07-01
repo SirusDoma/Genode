@@ -7,6 +7,21 @@ namespace Gx
         return {};
     }
 
+    std::vector<std::byte> FileSystemController::ReadFile(const std::string& fileName) const
+    {
+        const auto size = GetFileSize(fileName);
+        if (!size.has_value())
+            return {};
+
+        std::vector<std::byte> data(size.value());
+        const auto read = ReadFile(fileName, data.data(), data.size());
+        if (!read.has_value())
+            return {};
+
+        data.resize(read.value());
+        return data;
+    }
+
     const std::string& FileSystemController::GetPrefix() const
     {
         return m_prefix;

@@ -95,6 +95,23 @@ namespace Gx
         throw ResourceAccessException(fileName, "File is not exists or not supported");
     }
 
+    std::vector<std::byte> FileSystem::ReadFile(const std::string& fileName)
+    {
+        EnsureDefaultFileSystemsRegistered();
+
+        for (auto const& controller : m_controllers)
+        {
+            auto name = fileName;
+            if (!controller->GetPrefix().empty() && fileName.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
+                name = name.substr(controller->GetPrefix().size());
+
+            if (controller->Contains(name))
+                return controller->ReadFile(name);
+        }
+
+        throw ResourceAccessException(fileName, "File is not exists or not supported");
+    }
+
     std::optional<std::size_t> FileSystem::GetFileSize(const std::string& fileName)
     {
         EnsureDefaultFileSystemsRegistered();

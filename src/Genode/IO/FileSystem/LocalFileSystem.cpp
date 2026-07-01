@@ -167,6 +167,25 @@ namespace Gx
         return fs.read(data, size);
     }
 
+    std::vector<std::byte> LocalFileSystem::ReadFile(const std::string& fileName) const
+    {
+        sf::FileInputStream fs;
+        if (!fs.open(GetFullName(fileName)))
+            return {};
+
+        const auto size = fs.getSize().value_or(0);
+        if (size == 0)
+            return {};
+
+        std::vector<std::byte> data(size);
+        const auto read = fs.read(data.data(), data.size());
+        if (!read.has_value())
+            return {};
+
+        data.resize(read.value());
+        return data;
+    }
+
     void LocalFileSystem::WriteFile(const std::string& fileName, const void* data, const std::size_t size)
     {
         if (size <= 0)
