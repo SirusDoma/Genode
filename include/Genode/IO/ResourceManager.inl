@@ -75,7 +75,7 @@ namespace Gx
 
         auto loader = ResourceLoaderFactory::CreateLoader<R>();
         if (!loader)
-            throw ResourceLoadException("There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type");
+            throw ResourceLoadException(idOrFileName, "There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type");
 
         auto managed = static_cast<ContainerWrapper<R, U>*>(m_containers[typeid(R)].get());
         auto deserializer = [&, this] () {
@@ -93,7 +93,7 @@ namespace Gx
 
         auto loader = ResourceLoaderFactory::CreateLoader<R>();
         if (!loader)
-            throw ResourceLoadException("There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type");
+            throw ResourceLoadException(StringHelper::ToString(id), "There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type");
 
         auto managed = static_cast<ContainerWrapper<R, U>*>(m_containers[typeid(R)].get());
         auto deserializer = [&, this] () {
@@ -111,7 +111,7 @@ namespace Gx
 
         auto loader = ResourceLoaderFactory::CreateLoader<R>();
         if (!loader)
-            throw ResourceLoadException("There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type");
+            throw ResourceLoadException(StringHelper::ToString(id), "There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type");
 
         auto managed = static_cast<ContainerWrapper<R, U>*>(m_containers[typeid(R)].get());
         auto deserializer = [&, this] () {
@@ -129,7 +129,7 @@ namespace Gx
 
         auto loader = ResourceLoaderFactory::CreateLoader<R>();
         if (!loader)
-            throw ResourceLoadException("There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type.");
+            throw ResourceLoadException(StringHelper::ToString(id), "There's no [ResourceLoader] for [" + std::string(typeid(R).name()) + "] type.");
 
         auto managed = static_cast<ContainerWrapper<R, U>*>(m_containers[typeid(R)].get());
         auto deserializer = [&, this] () {

@@ -92,11 +92,11 @@ namespace Gx
             );
 
             if (!target.resize(targetSize))
-                throw ResourceLoadException("Failed to create render texture");
+                throw Exception("Failed to create render texture");
 
             auto texture = sf::Texture();
             if (!texture.loadFromImage(cursor.Source))
-                throw ResourceLoadException("Failed to load cursor texture");
+                throw Exception("Failed to load cursor texture");
 
             target.clear(sf::Color::Transparent);
             {

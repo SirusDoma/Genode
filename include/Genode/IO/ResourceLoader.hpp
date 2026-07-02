@@ -39,7 +39,7 @@ namespace Gx
             if constexpr (std::is_default_constructible_v<T>)
                 return std::make_unique<T>();
 
-            throw ResourceLoadException("Resource cannot be constructed without instantiator");
+            throw ResourceLoadException(context.GetID(), "Resource cannot be constructed without instantiator");
         }
 
         void SetResourceInstantiator(const ResourceInstantiator<T>& instantiator) { m_instantiator = instantiator; }
