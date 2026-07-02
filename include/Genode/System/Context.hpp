@@ -1,15 +1,11 @@
 #pragma once
 
-#include <Genode/System/Exception.hpp>
-
 #include <memory>
 #include <functional>
 #include <unordered_map>
 #include <vector>
 #include <typeindex>
 #include <type_traits>
-#include <stdexcept>
-#include <string>
 
 namespace Gx
 {
@@ -114,13 +110,13 @@ namespace Gx
             return *this;
         }
 
-        template <typename T, std::enable_if_t<IsConstructible<T>, int> = 0>
+        template <typename T, std::enable_if_t<Context::IsConstructible<T>, int> = 0>
         void Provide(Scope scope = Scope::Local);
 
         template <typename TInterface, typename TConcrete,
             std::enable_if_t<
                 std::is_base_of_v<TInterface, TConcrete> &&
-                IsConstructible<TConcrete>, int
+                Context::IsConstructible<TConcrete>, int
             > = 0
         >
         void Provide(Scope scope = Scope::Local);

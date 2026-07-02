@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 #include <string>
+#include <stdexcept>
 
 namespace Gx
 {
