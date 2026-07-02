@@ -32,7 +32,7 @@ namespace Gx
         return *instance.get();
     }
 
-    std::string LocalFileSystem::GetApplicationDirectoryPath()
+    std::filesystem::path LocalFileSystem::GetWorkingDirectory()
     {
         // Windows and Linux doesn't have to be using the actual path of the executable.
         // This because the operating system allows the user to manually specify working directory on their own.
@@ -41,12 +41,7 @@ namespace Gx
         // Context: https://lapcatsoftware.com/articles/app-translocation.html
 
         // De-translocate is not worth, workaround has been breaking multiple times since it relies on private API
-        return std::filesystem::current_path().string();
-    }
-
-    std::string LocalFileSystem::GetWorkingDirectory()
-    {
-        return std::filesystem::current_path().string();
+        return std::filesystem::current_path();
     }
 
     void LocalFileSystem::SetWorkingDirectory(const std::filesystem::path& inputPath)
@@ -64,18 +59,18 @@ namespace Gx
         std::filesystem::current_path(workingDir);
     }
 
-    std::vector<std::string> LocalFileSystem::GetAssetPaths()
+    std::vector<std::filesystem::path> LocalFileSystem::GetAssetPaths()
     {
-        auto paths = std::vector<std::string>();
+        auto paths = std::vector<std::filesystem::path>();
         for (const auto& p : m_paths)
-            paths.push_back(std::filesystem::weakly_canonical(std::filesystem::path(p)).string());
+            paths.push_back(std::filesystem::weakly_canonical(p));
 
         return paths;
     }
 
     void LocalFileSystem::AddAssetPath(const std::filesystem::path& path)
     {
-        m_paths.push_back(path.string());
+        m_paths.push_back(path);
     }
 
     ResourcePtr<sf::InputStream> LocalFileSystem::Open(const std::filesystem::path& fileName) const
@@ -93,7 +88,7 @@ namespace Gx
         const auto fullName = GetFullName(fileName);
         const auto size = GetFileSize(fullName).value_or(0);
 
-        return std::make_unique<FileInfo>(FileInfo(*this, fullName, size));
+        return std::make_unique<FileInfo>(FileInfo(*this, fullName.string(), size));
     }
 
     std::optional<std::size_t> LocalFileSystem::GetFileSize(const std::filesystem::path& fileName) const
@@ -112,39 +107,39 @@ namespace Gx
         if (std::filesystem::exists(fileName))
             return true;
 
-        return std::any_of(m_paths.begin(), m_paths.end(), [&fileName] (const std::string& path)
+        return std::any_of(m_paths.begin(), m_paths.end(), [&fileName] (const std::filesystem::path& path)
         {
-            const std::string fullPath = std::string(path).append("/").append(fileName.string());
-            return std::filesystem::exists(fullPath.c_str());
+            const std::filesystem::path fullPath = path.string().append("/").append(fileName.string());
+            return std::filesystem::exists(fullPath);
         });
     }
 
-    std::string LocalFileSystem::GetFileName(const std::filesystem::path& fullPath, const bool withExtension) const
+    std::filesystem::path LocalFileSystem::GetFileName(const std::filesystem::path& fullPath, const bool withExtension) const
     {
         if (withExtension)
-            return fullPath.filename().string();
+            return fullPath.filename();
 
-        return fullPath.filename().replace_extension().string();
+        return fullPath.filename().replace_extension();
     }
 
-    std::string LocalFileSystem::GetFullName(const std::filesystem::path& fileName, const bool withExtension) const
+    std::filesystem::path LocalFileSystem::GetFullName(const std::filesystem::path& fileName, const bool withExtension) const
     {
         if (std::filesystem::exists(fileName))
         {
             if (withExtension)
-                return fileName.string();
+                return fileName;
 
-            return std::filesystem::path(fileName).replace_extension().string();
+            return std::filesystem::path(fileName).replace_extension();
         }
 
-        for (std::string& dir : m_paths)
+        for (std::filesystem::path& dir : m_paths)
         {
-            if (std::string fullPath = std::string(dir).append("/").append(fileName.string()); std::filesystem::exists(fullPath))
+            if (std::filesystem::path fullPath = dir.string().append("/").append(fileName.string()); std::filesystem::exists(fullPath))
             {
                 if (withExtension)
                     return fullPath;
 
-                return std::filesystem::path(fullPath).replace_extension().string();
+                return std::filesystem::path(fullPath).replace_extension();
             }
         }
 
@@ -211,7 +206,7 @@ namespace Gx
             {
                 if (is_directory(entry) && recursive)
                 {
-                    paths.push_back(entry.path().string());
+                    paths.push_back(entry.path());
                     continue;
                 }
 

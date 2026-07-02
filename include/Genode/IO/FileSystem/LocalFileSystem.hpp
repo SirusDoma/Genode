@@ -15,16 +15,14 @@ namespace Gx
     public:
         [[nodiscard]] static LocalFileSystem& Instance();
 
-        [[nodiscard]] static std::string GetApplicationDirectoryPath();
-
-        [[nodiscard]] static std::string GetWorkingDirectory();
+        [[nodiscard]] static std::filesystem::path GetWorkingDirectory();
         static void SetWorkingDirectory(const std::filesystem::path& inputPath);
 
-        [[nodiscard]] static std::vector<std::string> GetAssetPaths();
+        [[nodiscard]] static std::vector<std::filesystem::path> GetAssetPaths();
         static void AddAssetPath(const std::filesystem::path& path);
 
-        [[nodiscard]] std::string GetFileName(const std::filesystem::path& fullPath, bool withExtension = true) const;
-        [[nodiscard]] std::string GetFullName(const std::filesystem::path& fileName, bool withExtension = true) const;
+        [[nodiscard]] std::filesystem::path GetFileName(const std::filesystem::path& fullPath,bool withExtension = true) const;
+        [[nodiscard]] std::filesystem::path GetFullName(const std::filesystem::path& fileName,bool withExtension = true) const;
 
         [[nodiscard]] ResourcePtr<sf::InputStream> Open(const std::filesystem::path& fileName) const override;
 
@@ -32,7 +30,7 @@ namespace Gx
 
         [[nodiscard]] std::unique_ptr<FileInfo> GetFileInfo(const std::filesystem::path& fileName) const override;
 
-        [[nodiscard]] std::vector<std::unique_ptr<FileInfo>> GetFileEntries() const override { throw Gx::NotSupportedException(); }
+        [[nodiscard]] std::vector<std::unique_ptr<FileInfo>> GetFileEntries() const override { throw NotSupportedException(); }
 
         std::optional<std::size_t> ReadFile(const std::filesystem::path& fileName, void* data, std::size_t size) const override;
         [[nodiscard]] std::vector<std::byte> ReadFile(const std::filesystem::path& fileName) const override;
@@ -45,6 +43,6 @@ namespace Gx
     private:
         LocalFileSystem() = default;
 
-        inline static std::vector<std::string> m_paths;
+        inline static std::vector<std::filesystem::path> m_paths;
     };
 }
