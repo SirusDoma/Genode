@@ -6,6 +6,7 @@
 #include <SFML/System/InputStream.hpp>
 
 #include <typeindex>
+#include <filesystem>
 
 namespace Gx
 {
@@ -23,11 +24,11 @@ namespace Gx
 
         [[nodiscard]] std::type_index GetResourceType() const { return m_type; }
 
-        virtual ResourcePtr<T> LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const = 0;
-        virtual ResourcePtr<T> LoadFromMemory(void* data, std::size_t size, const ResourceContext& ctx) const = 0;
-        virtual ResourcePtr<T> LoadFromStream(sf::InputStream& stream, const ResourceContext& ctx) const = 0;
+        [[nodiscard]] virtual ResourcePtr<T> LoadFromFile(const std::filesystem::path& fileName, const ResourceContext& ctx) const = 0;
+        [[nodiscard]] virtual ResourcePtr<T> LoadFromMemory(void* data, std::size_t size, const ResourceContext& ctx) const = 0;
+        [[nodiscard]] virtual ResourcePtr<T> LoadFromStream(sf::InputStream& stream, const ResourceContext& ctx) const = 0;
 
-        virtual ResourcePtr<T> LoadFromJson(const Json& json, const ResourceContext& context) const { throw NotSupportedException(); }
+        [[nodiscard]] virtual ResourcePtr<T> LoadFromJson(const Json& json, const ResourceContext& context) const { throw NotSupportedException(); }
 
     protected:
         [[nodiscard]] std::unique_ptr<T> Instantiate(const ResourceContext& context) const

@@ -3,7 +3,7 @@
 
 namespace Gx
 {
-    ResourcePtr<sf::SoundBuffer> SoundBufferLoader::LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const
+    ResourcePtr<sf::SoundBuffer> SoundBufferLoader::LoadFromFile(const std::filesystem::path& fileName, const ResourceContext& ctx) const
     {
         auto resource = std::make_unique<sf::SoundBuffer>();
         if (!resource->loadFromFile(LocalFileSystem::Instance().GetFullName(fileName)))

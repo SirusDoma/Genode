@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <cstddef>
+#include <filesystem>
 
 namespace Gx
 {
@@ -19,16 +20,16 @@ namespace Gx
             FileSystem() = delete;
             ~FileSystem() = delete;
 
-            [[nodiscard]] static ResourcePtr<sf::InputStream> Open(const std::string& fileName);
+            [[nodiscard]] static ResourcePtr<sf::InputStream> Open(const std::filesystem::path& fileName);
 
             [[nodiscard]] static std::vector<std::unique_ptr<FileInfo>> Scan(const std::string& pattern);
 
-            [[nodiscard]] static bool Contains(const std::string& fileName);
-            [[nodiscard]] static std::unique_ptr<FileInfo> GetFileInfo(const std::string& fileName);
+            [[nodiscard]] static bool Contains(const std::filesystem::path& fileName);
+            [[nodiscard]] static std::unique_ptr<FileInfo> GetFileInfo(const std::filesystem::path& fileName);
 
-            static std::optional<std::size_t> ReadFile(const std::string& fileName, void* data, std::size_t size);
-            [[nodiscard]] static std::vector<std::byte> ReadFile(const std::string& fileName);
-            [[nodiscard]] static std::optional<std::size_t> GetFileSize(const std::string& fileName);
+            static std::optional<std::size_t> ReadFile(const std::filesystem::path& fileName, void* data, std::size_t size);
+            [[nodiscard]] static std::vector<std::byte> ReadFile(const std::filesystem::path& fileName);
+            [[nodiscard]] static std::optional<std::size_t> GetFileSize(const std::filesystem::path& fileName);
 
             [[nodiscard]] static bool IsMounted(const FileSystemController& fileSystem);
             static void Mount(const FileSystemController& fileSystem);

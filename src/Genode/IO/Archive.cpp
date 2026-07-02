@@ -5,10 +5,10 @@
 
 namespace Gx
 {
-    bool Archive::LoadFromFile(const std::string& fileName)
+    bool Archive::LoadFromFile(const std::filesystem::path& fileName)
     {
-        m_filename = fileName;
-        SetPathPrefix(StringHelper::RemoveExtension(fileName) + "/");
+        m_filename = fileName.string();
+        SetPathPrefix(StringHelper::RemoveExtension(m_filename) + "/");
 
         return true;
     }

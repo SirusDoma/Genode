@@ -49,9 +49,9 @@ namespace Gx
         return std::filesystem::current_path().string();
     }
 
-    void LocalFileSystem::SetWorkingDirectory(const std::string& inputPath)
+    void LocalFileSystem::SetWorkingDirectory(const std::filesystem::path& inputPath)
     {
-        auto workingDir = std::filesystem::path(inputPath);
+        auto workingDir = inputPath;
 
 #ifdef __APPLE__
         if (workingDir.has_filename() || workingDir.has_extension())
@@ -73,12 +73,12 @@ namespace Gx
         return paths;
     }
 
-    void LocalFileSystem::AddAssetPath(const std::string& path)
+    void LocalFileSystem::AddAssetPath(const std::filesystem::path& path)
     {
-        m_paths.push_back(path);
+        m_paths.push_back(path.string());
     }
 
-    ResourcePtr<sf::InputStream> LocalFileSystem::Open(const std::string& fileName) const
+    ResourcePtr<sf::InputStream> LocalFileSystem::Open(const std::filesystem::path& fileName) const
     {
         const auto fileStream = new sf::FileInputStream();
         auto stream = ResourcePtr<sf::InputStream>(fileStream, [] (auto fs) { delete fs; });
@@ -88,7 +88,7 @@ namespace Gx
         return nullptr;
     }
 
-    std::unique_ptr<FileInfo> LocalFileSystem::GetFileInfo(const std::string& fileName) const
+    std::unique_ptr<FileInfo> LocalFileSystem::GetFileInfo(const std::filesystem::path& fileName) const
     {
         const auto fullName = GetFullName(fileName);
         const auto size = GetFileSize(fullName).value_or(0);
@@ -96,7 +96,7 @@ namespace Gx
         return std::make_unique<FileInfo>(FileInfo(*this, fullName, size));
     }
 
-    std::optional<std::size_t> LocalFileSystem::GetFileSize(const std::string& fileName) const
+    std::optional<std::size_t> LocalFileSystem::GetFileSize(const std::filesystem::path& fileName) const
     {
         if (auto fileStream = sf::FileInputStream(); fileStream.open(GetFullName(fileName)))
             return fileStream.getSize();
@@ -104,43 +104,42 @@ namespace Gx
         return std::nullopt;
     }
 
-    bool LocalFileSystem::Contains(const std::string& fileName) const
+    bool LocalFileSystem::Contains(const std::filesystem::path& fileName) const
     {
         if (fileName.empty())
             return false;
 
-        if (const auto filePath = std::filesystem::path(fileName.c_str()); std::filesystem::exists(filePath))
+        if (std::filesystem::exists(fileName))
             return true;
 
-        return std::any_of(m_paths.begin(), m_paths.end(), [fileName] (const std::string& path)
+        return std::any_of(m_paths.begin(), m_paths.end(), [&fileName] (const std::string& path)
         {
-            const std::string fullPath = std::string(path).append("/").append(fileName);
+            const std::string fullPath = std::string(path).append("/").append(fileName.string());
             return std::filesystem::exists(fullPath.c_str());
         });
     }
 
-    std::string LocalFileSystem::GetFileName(const std::string& fullPath, const bool withExtension) const
+    std::string LocalFileSystem::GetFileName(const std::filesystem::path& fullPath, const bool withExtension) const
     {
-        const auto filePath = std::filesystem::path(fullPath.c_str());
         if (withExtension)
-            return filePath.filename().string();
+            return fullPath.filename().string();
 
-        return filePath.filename().replace_extension().string();
+        return fullPath.filename().replace_extension().string();
     }
 
-    std::string LocalFileSystem::GetFullName(const std::string& fileName, const bool withExtension) const
+    std::string LocalFileSystem::GetFullName(const std::filesystem::path& fileName, const bool withExtension) const
     {
         if (std::filesystem::exists(fileName))
         {
             if (withExtension)
-                return fileName;
+                return fileName.string();
 
             return std::filesystem::path(fileName).replace_extension().string();
         }
 
         for (std::string& dir : m_paths)
         {
-            if (std::string fullPath = std::string(dir).append("/").append(fileName); std::filesystem::exists(fullPath))
+            if (std::string fullPath = std::string(dir).append("/").append(fileName.string()); std::filesystem::exists(fullPath))
             {
                 if (withExtension)
                     return fullPath;
@@ -152,7 +151,7 @@ namespace Gx
         return "";
     }
 
-    std::optional<std::size_t> LocalFileSystem::ReadFile(const std::string& fileName, void* data, std::size_t size) const
+    std::optional<std::size_t> LocalFileSystem::ReadFile(const std::filesystem::path& fileName, void* data, std::size_t size) const
     {
         sf::FileInputStream fs;
         if (!fs.open(GetFullName(fileName)))
@@ -167,7 +166,7 @@ namespace Gx
         return fs.read(data, size);
     }
 
-    std::vector<std::byte> LocalFileSystem::ReadFile(const std::string& fileName) const
+    std::vector<std::byte> LocalFileSystem::ReadFile(const std::filesystem::path& fileName) const
     {
         sf::FileInputStream fs;
         if (!fs.open(GetFullName(fileName)))
@@ -186,12 +185,12 @@ namespace Gx
         return data;
     }
 
-    void LocalFileSystem::WriteFile(const std::string& fileName, const void* data, const std::size_t size)
+    void LocalFileSystem::WriteFile(const std::filesystem::path& fileName, const void* data, const std::size_t size)
     {
         if (size <= 0)
             return;
 
-        std::ofstream fs(fileName.c_str(), std::ios::out | std::ios::binary);
+        std::ofstream fs(fileName, std::ios::out | std::ios::binary);
         fs.write(static_cast<const char*>(data), size);
 
         fs.close();

@@ -9,7 +9,7 @@ namespace Gx
         m_smooth = smooth;
     }
 
-    ResourcePtr<sf::Texture> TextureLoader::LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const
+    ResourcePtr<sf::Texture> TextureLoader::LoadFromFile(const std::filesystem::path& fileName, const ResourceContext& ctx) const
     {
         auto resource = std::make_unique<sf::Texture>();
         if (!resource->loadFromFile(LocalFileSystem::Instance().GetFullName(fileName)))

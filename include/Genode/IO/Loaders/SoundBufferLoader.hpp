@@ -11,8 +11,8 @@ namespace Gx
     public:
         SoundBufferLoader() = default;
 
-        [[nodiscard]] ResourcePtr<sf::SoundBuffer> LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const override;
-        ResourcePtr<sf::SoundBuffer> LoadFromMemory(void* data, std::size_t size, const ResourceContext& ctx) const override;
-        ResourcePtr<sf::SoundBuffer> LoadFromStream(sf::InputStream& stream, const ResourceContext& ctx) const override;
+        [[nodiscard]] ResourcePtr<sf::SoundBuffer> LoadFromFile(const std::filesystem::path& fileName, const ResourceContext& ctx) const override;
+        [[nodiscard]] ResourcePtr<sf::SoundBuffer> LoadFromMemory(void* data, std::size_t size, const ResourceContext& ctx) const override;
+        [[nodiscard]] ResourcePtr<sf::SoundBuffer> LoadFromStream(sf::InputStream& stream, const ResourceContext& ctx) const override;
     };
 }

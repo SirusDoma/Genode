@@ -21,28 +21,28 @@ namespace
 namespace Gx
 {
 
-    ResourcePtr<sf::InputStream> FileSystem::Open(const std::string& fileName)
+    ResourcePtr<sf::InputStream> FileSystem::Open(const std::filesystem::path& fileName)
     {
         EnsureDefaultFileSystemsRegistered();
 
         for (auto const& controller : m_controllers)
         {
-            auto name = fileName;
-            if (!controller->GetPrefix().empty() && fileName.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
+            auto name = fileName.string();
+            if (!controller->GetPrefix().empty() && name.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
                 name = name.substr(controller->GetPrefix().size());
 
             if (controller->Contains(name))
                 return controller->Open(name);
         }
 
-        throw ResourceAccessException(fileName, "File is not exists or not supported");
+        throw ResourceAccessException(fileName.string(), "File is not exists or not supported");
     }
 
-    bool FileSystem::Contains(const std::string& fileName)
+    bool FileSystem::Contains(const std::filesystem::path& fileName)
     {
         EnsureDefaultFileSystemsRegistered();
 
-        return std::any_of(m_controllers.begin(), m_controllers.end(), [=] (auto controller)
+        return std::any_of(m_controllers.begin(), m_controllers.end(), [&] (auto controller)
         {
             return controller->Contains(fileName);
         });
@@ -65,7 +65,7 @@ namespace Gx
         return files;
     }
 
-    std::unique_ptr<FileInfo> FileSystem::GetFileInfo(const std::string& fileName)
+    std::unique_ptr<FileInfo> FileSystem::GetFileInfo(const std::filesystem::path& fileName)
     {
         EnsureDefaultFileSystemsRegistered();
 
@@ -75,58 +75,58 @@ namespace Gx
                 return controller->GetFileInfo(fileName);
         }
 
-        throw ResourceAccessException(fileName, "File is not exists or not supported");
+        throw ResourceAccessException(fileName.string(), "File is not exists or not supported");
     }
 
-    std::optional<std::size_t> FileSystem::ReadFile(const std::string& fileName, void* data, std::size_t size)
+    std::optional<std::size_t> FileSystem::ReadFile(const std::filesystem::path& fileName, void* data, std::size_t size)
     {
         EnsureDefaultFileSystemsRegistered();
 
         for (auto const& controller : m_controllers)
         {
-            auto name = fileName;
-            if (!controller->GetPrefix().empty() && fileName.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
+            auto name = fileName.string();
+            if (!controller->GetPrefix().empty() && name.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
                 name = name.substr(controller->GetPrefix().size());
 
             if (controller->Contains(name))
                 return controller->ReadFile(name, data, size);
         }
 
-        throw ResourceAccessException(fileName, "File is not exists or not supported");
+        throw ResourceAccessException(fileName.string(), "File is not exists or not supported");
     }
 
-    std::vector<std::byte> FileSystem::ReadFile(const std::string& fileName)
+    std::vector<std::byte> FileSystem::ReadFile(const std::filesystem::path& fileName)
     {
         EnsureDefaultFileSystemsRegistered();
 
         for (auto const& controller : m_controllers)
         {
-            auto name = fileName;
-            if (!controller->GetPrefix().empty() && fileName.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
+            auto name = fileName.string();
+            if (!controller->GetPrefix().empty() && name.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
                 name = name.substr(controller->GetPrefix().size());
 
             if (controller->Contains(name))
                 return controller->ReadFile(name);
         }
 
-        throw ResourceAccessException(fileName, "File is not exists or not supported");
+        throw ResourceAccessException(fileName.string(), "File is not exists or not supported");
     }
 
-    std::optional<std::size_t> FileSystem::GetFileSize(const std::string& fileName)
+    std::optional<std::size_t> FileSystem::GetFileSize(const std::filesystem::path& fileName)
     {
         EnsureDefaultFileSystemsRegistered();
 
         for (auto const& controller : m_controllers)
         {
-            auto name = fileName;
-            if (!controller->GetPrefix().empty() && fileName.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
+            auto name = fileName.string();
+            if (!controller->GetPrefix().empty() && name.compare(0, controller->GetPrefix().size(), controller->GetPrefix()) == 0)
                 name = name.substr(controller->GetPrefix().size());
 
             if (controller->Contains(name))
                 return controller->GetFileSize(name);
         }
 
-        throw ResourceAccessException(fileName, "File is not exists or not supported");
+        throw ResourceAccessException(fileName.string(), "File is not exists or not supported");
     }
 
     bool FileSystem::IsMounted(const FileSystemController& fileSystem)

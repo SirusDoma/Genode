@@ -8,6 +8,7 @@
 #include <Genode/Utilities/StringHelper.hpp>
 
 #include <string>
+#include <filesystem>
 
 namespace Gx
 {
@@ -25,11 +26,11 @@ namespace Gx
             return m_loader.get();
         }
 
-        ResourcePtr<B> LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const override
+        ResourcePtr<B> LoadFromFile(const std::filesystem::path& fileName, const ResourceContext& ctx) const override
         {
             if (!m_loader)
                 return nullptr;
-            
+
             auto resource = m_loader->LoadFromFile(fileName, ctx);
             if (!resource)
                 return nullptr;

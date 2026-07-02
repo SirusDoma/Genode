@@ -15,7 +15,7 @@ namespace Gx
         m_smooth = smooth;
     }
 
-    ResourcePtr<Font> FontLoader::LoadFromFile(const std::string& fileName, const ResourceContext& ctx) const
+    ResourcePtr<Font> FontLoader::LoadFromFile(const std::filesystem::path& fileName, const ResourceContext& ctx) const
     {
         auto resource = std::make_unique<Font>();
         if (!resource->LoadFromFile(LocalFileSystem::Instance().GetFullName(fileName)))

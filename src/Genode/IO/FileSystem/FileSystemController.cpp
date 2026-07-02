@@ -7,7 +7,7 @@ namespace Gx
         return {};
     }
 
-    std::vector<std::byte> FileSystemController::ReadFile(const std::string& fileName) const
+    std::vector<std::byte> FileSystemController::ReadFile(const std::filesystem::path& fileName) const
     {
         const auto size = GetFileSize(fileName);
         if (!size.has_value())
