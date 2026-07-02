@@ -1,11 +1,12 @@
 #pragma once
 
+#include <Genode/Graphics/Transformable.hpp>
+
 #include <string>
 #include <vector>
 #include <memory>
 #include <unordered_set>
-
-#include <Genode/Graphics/Transformable.hpp>
+#include <cstdint>
 
 namespace Gx
 {
