@@ -328,7 +328,7 @@ namespace Gx
     {
         if (const auto control = dynamic_cast<Control*>(&node); control)
         {
-            OnControlChildAdded(*control);
+            OnControlChildRemove(*control);
             // Invalidate();
         }
     }
