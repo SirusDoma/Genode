@@ -103,6 +103,7 @@ namespace Gx
     void Node::SetName(const std::string& name)
     {
         m_name = name;
+        m_version++;
     }
 
     const std::string& Node::GetTag() const
@@ -113,6 +114,17 @@ namespace Gx
     void Node::SetTag(const std::string& tag)
     {
         m_tag = tag;
+        m_version++;
+    }
+
+    std::uint64_t Node::GetVersion() const
+    {
+        return m_version;
+    }
+
+    void Node::SetVersion(const std::uint64_t version)
+    {
+        m_version = version;
     }
 
     Node* Node::GetParent() const
@@ -210,6 +222,7 @@ namespace Gx
 
     void Node::AddChild(Node& child)
     {
+        bool added = false;
         if (std::find(m_children.begin(), m_children.end(), &child) == m_children.end())
         {
             if (child.m_parent)
@@ -217,6 +230,8 @@ namespace Gx
 
             child.m_parent = this;
             m_children.push_back(&child);
+
+            added = true;
         }
         else
             child.m_parent = this;
@@ -229,8 +244,12 @@ namespace Gx
         else
             m_pending.insert(&child);
 
-        // TODO: Not guaranteed to be initialized?
-        OnChildAdded(child);
+        // Note: child is not guaranteed to be initialized at this point
+        if (added)
+        {
+            m_version++;
+            OnChildAdded(child);
+        }
     }
 
     void Node::RemoveChild(Node& child)
@@ -241,6 +260,7 @@ namespace Gx
         const auto iterator = std::find(m_children.begin(), m_children.end(), &child);
         if (iterator != m_children.end())
         {
+            m_version++;
             if (child.m_state != State::Finalized)
             {
                 OnChildRemove(child);
@@ -271,5 +291,7 @@ namespace Gx
 
         m_pending.clear();
         m_children.clear();
+
+        m_version++;
     }
 }

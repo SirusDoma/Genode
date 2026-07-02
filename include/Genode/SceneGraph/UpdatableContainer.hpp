@@ -9,6 +9,13 @@ namespace Gx
     {
     protected:
         UpdatableContainer() = default;
+
+        std::vector<Updatable*> GetUpdatableChildren() const;
+
         void Update(const sf::Time& delta) override;
+
+    private:
+        mutable std::uint64_t m_version{0};
+        mutable std::vector<Updatable*> m_updatables;
     };
 }

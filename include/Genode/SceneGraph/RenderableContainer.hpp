@@ -10,6 +10,12 @@ namespace Gx
     protected:
         RenderableContainer() = default;
 
+        std::vector<Renderable*> GetRenderableChildren() const;
+
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
+
+    private:
+        mutable std::uint64_t m_version{0};
+        mutable std::vector<Renderable*> m_renderables;
     };
 }

@@ -30,6 +30,7 @@ namespace Gx
         [[nodiscard]] const std::string& GetTag() const;
         void SetTag(const std::string& tag);
 
+        [[nodiscard]] std::uint64_t GetVersion() const;
         [[nodiscard]] Node* GetParent() const;
         [[nodiscard]] std::vector<Node*> GetChildren() const;
         [[nodiscard]] std::vector<Node*> GetChildrenByTag(const std::string& tag) const;
@@ -64,6 +65,8 @@ namespace Gx
         virtual void OnChildAdded(Node& node);
         virtual void OnChildRemove(Node& node);
 
+        void SetVersion(std::uint64_t version);
+
     private:
         enum class State
         {
@@ -76,6 +79,7 @@ namespace Gx
         State m_state{State::Unintialized};
         std::string m_name{};
         std::string m_tag{};
+        std::uint64_t m_version{0};
         std::vector<Node*> m_children{};
         mutable std::unordered_set<Node*> m_pending{};
     };

@@ -26,7 +26,7 @@ namespace Gx
         states.transform = sf::Transform();
 
         // Render child with sprite batch
-        for (const auto node : GetChildren())
+        for (const auto node : GetRenderableChildren())
         {
             states.Layer += 1.f;
             if (const auto renderable = dynamic_cast<Renderable*>(node))

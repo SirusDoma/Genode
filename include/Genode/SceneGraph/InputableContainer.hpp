@@ -11,6 +11,13 @@ namespace Gx
     {
     protected:
         InputableContainer() = default;
+
+        std::vector<Inputable*> GetInputableChildren() const;
+
         bool Input(const sf::Event& ev) override;
+
+    private:
+        mutable std::uint64_t m_version{0};
+        mutable std::vector<Inputable*> m_inputables;
     };
 }
