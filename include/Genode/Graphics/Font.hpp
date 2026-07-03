@@ -75,7 +75,7 @@ namespace Gx
         /// \see LoadFromMemory, LoadFromStream
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] bool LoadFromFile(const std::string& filename);
+        [[nodiscard]] bool LoadFromFile(const std::filesystem::path& filename);
 
         ////////////////////////////////////////////////////////////
         /// \brief Load the font from a file in memory

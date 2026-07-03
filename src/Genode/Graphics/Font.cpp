@@ -130,10 +130,10 @@ namespace Gx
 
 
     ////////////////////////////////////////////////////////////
-    bool Font::LoadFromFile(const std::string& filename)
+    bool Font::LoadFromFile(const std::filesystem::path& filename)
     {
         // Get Full name
-        const std::string fullName = LocalFileSystem::Instance().GetFullName(filename);
+        const auto fullName = LocalFileSystem::Instance().GetFullName(filename);
 
         // Cleanup the previous resources
         Cleanup();
@@ -151,7 +151,7 @@ namespace Gx
 
         // Load the new font face from the specified file
         FT_Face face = nullptr;
-        if (FT_New_Face(fontHandles->library, fullName.c_str(), 0, &face) != 0)
+        if (FT_New_Face(fontHandles->library, fullName.string().c_str(), 0, &face) != 0)
         {
             sf::err() << "Failed to load font (failed to create the font face)\n" << filename << std::endl;
             return false;
