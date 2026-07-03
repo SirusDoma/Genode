@@ -56,14 +56,13 @@ elseif(APPLE)
 else()
     # Libraries
     target_link_libraries(${LIBRARY_NAME} PRIVATE stdc++fs)
-    find_package(Freetype, QUIET)
 endif()
 
 # -- SFML
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.1
+    GIT_TAG 3.1.0
 )
 FetchContent_MakeAvailable(SFML)
 
@@ -90,8 +89,8 @@ target_include_directories(${LIBRARY_NAME} PRIVATE extlibs/headers)
 # Link SFML
 target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window)
 
-# Link FreeType
-target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype)
+# Link FreeType, SheenBidi and HarfBuzz
+target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype SheenBidi::SheenBidi HarfBuzz::HarfBuzz)
 
 # Link JSON
 target_link_libraries(${LIBRARY_NAME} PRIVATE nlohmann_json::nlohmann_json)

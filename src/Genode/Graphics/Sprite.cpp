@@ -1,7 +1,7 @@
-﻿////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2026 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -27,41 +27,31 @@
 ////////////////////////////////////////////////////////////
 #include <Genode/Graphics/Sprite.hpp>
 
-#include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include <cmath>
 
 namespace Gx
 {
-    Sprite::Sprite() :
-        m_vertices(),
-        m_texture(nullptr),
-        m_texcoords(),
-        m_blendMode(BlendMode::Auto)
-    {
-    }
-
+    ////////////////////////////////////////////////////////////
     Sprite::Sprite(const sf::Texture& texture) :
-        m_vertices(),
-        m_texture(nullptr),
-        m_texcoords(),
-        m_blendMode(BlendMode::Auto)
+        Sprite(texture, sf::IntRect({0, 0}, sf::Vector2i(texture.getSize())))
     {
-        SetTexture(texture);
     }
 
+
+    ////////////////////////////////////////////////////////////
     Sprite::Sprite(const sf::Texture& texture, const sf::IntRect& rectangle) :
-        m_vertices(),
-        m_texture(nullptr),
-        m_texcoords(),
-        m_blendMode(BlendMode::Auto)
+        m_texture(&texture),
+        m_texcoords(rectangle)
     {
-        SetTexture(texture);
-        SetTexCoords(rectangle);
+        UpdateVertices();
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Sprite::SetTexture(const sf::Texture& texture, const bool resetRect)
     {
         // Recompute the texture area if requested, or if there was no valid texture & rect before
@@ -72,6 +62,8 @@ namespace Gx
         m_texture = &texture;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Sprite::SetTexCoords(const sf::IntRect& rectangle)
     {
         if (rectangle != m_texcoords)
@@ -81,46 +73,59 @@ namespace Gx
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Sprite::SetColor(const sf::Color& color)
     {
-        // Update the vertices' color
         for (auto& vertex : m_vertices)
             vertex.color = color;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Texture* Sprite::GetTexture() const
     {
         return m_texture;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::IntRect& Sprite::GetTexCoords() const
     {
         return m_texcoords;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Color& Sprite::GetColor() const
     {
         return m_vertices[0].color;
     }
 
+
+    ////////////////////////////////////////////////////////////
     BlendMode Sprite::GetBlendMode() const
     {
         return m_blendMode;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Sprite::SetBlendMode(const BlendMode blendMode)
     {
         m_blendMode = blendMode;
     }
 
+
+    ////////////////////////////////////////////////////////////
     sf::FloatRect Sprite::GetLocalBounds() const
     {
-        const auto width = static_cast<float>(std::abs(m_texcoords.size.x));
-        const auto height = static_cast<float>(std::abs(m_texcoords.size.y));
-
-        return {{0.f, 0.f}, {width, height}};
+        // Last vertex posiion is equal to texture rect size absolute value
+        return {{0.f, 0.f}, m_vertices[3].position};
     }
 
+
+    ////////////////////////////////////////////////////////////
     sf::FloatRect Sprite::GetGlobalBounds() const
     {
         auto parent    = GetParent();
@@ -135,6 +140,8 @@ namespace Gx
         return transform.transformRect(GetLocalBounds());
     }
 
+
+    ////////////////////////////////////////////////////////////
     RenderStates Sprite::Render(RenderSurface& surface, RenderStates states) const
     {
         if (!IsVisible())
@@ -162,6 +169,8 @@ namespace Gx
         return RenderableContainer::Render(surface, states);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Sprite::UpdateVertices()
     {
         const auto [position, size] = sf::FloatRect(m_texcoords);

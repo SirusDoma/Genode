@@ -16,7 +16,7 @@ namespace Gx
 
         [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
 
-        void Show(Control* parent);
+        void Show(const Control* parent);
         void Show(sf::Vector2f position, Alignment alignment = Alignment::Center);
         void Show();
         void Hide();

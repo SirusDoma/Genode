@@ -1,8 +1,6 @@
 #include <Genode/UI/Label.hpp>
 #include <Genode/Graphics/Font.hpp>
 
-#include <cmath>
-
 namespace Gx
 {
     void Label::AddFallbackFont(const Gx::Font& font) const
@@ -46,21 +44,6 @@ namespace Gx
     {
         Text::OnFontChanged(font);
         m_defaultFont = &font;
-    }
-
-    Label::Alignment Label::GetAlignment() const
-    {
-        return m_alignment;
-    }
-
-    void Label::SetAlignment(const Alignment alignment)
-    {
-        if (m_alignment == alignment)
-            return;
-
-        m_alignment = alignment;
-        m_alignmentUpdated = false;
-        Invalidate();
     }
 
     void Label::OnGeometryUpdating() const
@@ -110,46 +93,46 @@ namespace Gx
         }
     }
 
-    void Label::OnGeometryUpdated() const
-    {
-        Text::OnGeometryUpdated();
-        m_alignmentUpdated = false;
-    }
-
     void Label::Invalidate()
     {
         EnsureGeometryUpdate();
 
         if (m_bounds != sf::FloatRect{})
         {
-            auto string = GetString();
-            std::size_t checkpoint = 0;
-            for (std::size_t c = 0; c < string.getSize(); c++)
+            auto string  = GetString();
+            bool wrapped = true;
+            while (wrapped)
             {
-                if (string[c] == '\n')
-                    continue;
+                wrapped = false;
 
-                if (string[c] == ' ')
+                std::size_t checkpoint = 0;
+                for (const auto& glyph : GetShapedGlyphs())
                 {
-                    checkpoint = c;
-                    continue;
-                }
+                    const auto c = static_cast<std::size_t>(glyph.cluster);
+                    if (c >= string.getSize() || string[c] == '\n')
+                        continue;
 
-                const auto position = FindCharacterPosition(c);
-                if (m_bounds.position.x + position.x > m_bounds.position.x + m_bounds.size.x)
-                {
-                    if (checkpoint == 0 && c > 0)
-                        checkpoint = c - 1;
-
-                    if (string[checkpoint] != '\n')
+                    if (string[c] == ' ')
                     {
-                        string.replace(checkpoint, 1, "\n");
-                        SetString(string);
-
-                        c = 0;
+                        checkpoint = c;
+                        continue;
                     }
-                    else
+
+                    const auto position = GetTransform().transformPoint(glyph.position);
+                    if (m_bounds.position.x + position.x > m_bounds.position.x + m_bounds.size.x)
                     {
+                        if (checkpoint == 0 && c > 0)
+                            checkpoint = c - 1;
+
+                        if (string[checkpoint] != '\n')
+                        {
+                            string.replace(checkpoint, 1, "\n");
+                            SetString(string);
+
+                            wrapped = true;
+                            break;
+                        }
+
                         checkpoint = 0;
                     }
                 }
@@ -157,20 +140,5 @@ namespace Gx
 
             EnsureGeometryUpdate();
         }
-
-        if (m_alignmentUpdated)
-            return;
-
-        const auto bounds = GetLocalBounds();
-        const auto origin = GetOrigin();
-
-        if (m_alignment == Alignment::Left)
-            SetOrigin(bounds.position.x, origin.y);
-        else if (m_alignment == Alignment::Center)
-            SetOrigin(std::floor(bounds.position.x + (bounds.size.x / 2.f)), origin.y);
-        else if (m_alignment == Alignment::Right)
-            SetOrigin((bounds.position.x + bounds.size.x), origin.y);
-
-        m_alignmentUpdated = true;
     }
 }

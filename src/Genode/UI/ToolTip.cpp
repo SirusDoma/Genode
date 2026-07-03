@@ -33,7 +33,7 @@ namespace Gx
         return m_rectangle.GetLocalBounds();
     }
 
-    void ToolTip::Show(Control* parent)
+    void ToolTip::Show(const Control* parent)
     {
         auto position = sf::Vector2f();
         auto alignment = Alignment::Left;

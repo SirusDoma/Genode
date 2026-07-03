@@ -136,6 +136,36 @@ namespace Gx
         void SetOutlineThickness(float thickness);
 
         ////////////////////////////////////////////////////////////
+        /// @brief Set the limit on the ratio between miter length and outline thickness
+        ///
+        /// Outline segments around each shape corner are joined either
+        /// with a miter or a bevel join.
+        /// - A miter join is formed by extending outline segments until
+        ///   they intersect. The distance between the point of
+        ///   intersection and the shape's corner is the miter length.
+        /// - A bevel join is formed by connecting outline segments with
+        ///   a straight line perpendicular to the corner's bissector.
+        ///
+        /// The miter limit is used to determine whether ouline segments
+        /// around a corner are joined with a bevel or a miter.
+        /// When the ratio between the miter length and outline thickness
+        /// exceeds the miter limit, a bevel is used instead of a miter.
+        ///
+        /// The miter limit is linked to the maximum inner angle of a
+        /// corner below which a bevel is used by the following formula:
+        ///
+        /// miterLimit = 1 / sin(angle / 2)
+        ///
+        /// The miter limit must be greater than or equal to 1.
+        /// By default, the miter limit is 10.
+        ///
+        /// @param miterLimit New miter limit
+        ///
+        /// @see `GetMiterLimit`
+        ////////////////////////////////////////////////////////////
+        void SetMiterLimit(float miterLimit);
+
+        ////////////////////////////////////////////////////////////
         /// @brief Get the source texture of the shape
         ///
         /// If the shape has no source texture, a `nullptr` is returned.
@@ -194,6 +224,15 @@ namespace Gx
         /// @see `SetOutlineThickness`
         ////////////////////////////////////////////////////////////
         [[nodiscard]] float GetOutlineThickness() const;
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Get the limit on the ratio between miter length and outline thickness
+        ///
+        /// @return Limit on the ratio between miter length and outline thickness
+        ///
+        /// @see `SetMiterLimit`
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] float GetMiterLimit() const;
 
         ////////////////////////////////////////////////////////////
         /// @brief Get the total number of points of the shape
@@ -320,16 +359,17 @@ namespace Gx
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        const sf::Texture* m_texture{};                                       //!< Texture of the shape
-        sf::IntRect        m_textureRect;                                     //!< Rectangle defining the area of the source texture to display
-        sf::Color          m_fillColor{sf::Color::White};                     //!< Fill color
-        sf::Color          m_outlineColor{sf::Color::White};                  //!< Outline color
-        ColorMap           m_colorMap{};                                      //!< Point fill colors
-        float              m_outlineThickness{};                              //!< Thickness of the shape's outline
-        sf::VertexArray    m_vertices{sf::PrimitiveType::TriangleFan};        //!< Vertex array containing the fill geometry
-        sf::VertexArray    m_outlineVertices{sf::PrimitiveType::TriangleFan}; //!< Vertex array containing the outline geometry
-        sf::FloatRect      m_insideBounds;                                    //!< Bounding rectangle of the inside (fill)
-        sf::FloatRect      m_bounds;                                          //!< Bounding rectangle of the whole shape (outline + fill)
+        const sf::Texture* m_texture{};                                         //!< Texture of the shape
+        sf::IntRect        m_textureRect;                                       //!< Rectangle defining the area of the source texture to display
+        sf::Color          m_fillColor{sf::Color::White};                       //!< Fill color
+        sf::Color          m_outlineColor{sf::Color::White};                    //!< Outline color
+        ColorMap           m_colorMap{};                                        //!< Point fill colors
+        float              m_outlineThickness{};                                //!< Thickness of the shape's outline
+        float              m_miterLimit{10.f};                                  //!< Limit on the ratio between miter length and outline thickness
+        sf::VertexArray    m_vertices{sf::PrimitiveType::TriangleFan};          //!< Vertex array containing the fill geometry
+        sf::VertexArray    m_outlineVertices{sf::PrimitiveType::TriangleStrip}; //!< Vertex array containing the outline geometry
+        sf::FloatRect      m_insideBounds;                                      //!< Bounding rectangle of the inside (fill)
+        sf::FloatRect      m_bounds;                                            //!< Bounding rectangle of the whole shape (outline + fill)
     };
 
 }

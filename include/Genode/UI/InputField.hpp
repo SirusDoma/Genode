@@ -6,6 +6,8 @@
 #include <Genode/Graphics/Text.hpp>
 #include <Genode/UI/Label.hpp>
 
+#include <vector>
+
 namespace Gx
 {
     class InputField : public Control, public virtual Colorable
@@ -70,6 +72,7 @@ namespace Gx
         size_t Erase(size_t index, int length);
 
     private:
+        [[nodiscard]] std::vector<sf::Vector2f> ComputeCursorPositions() const;
         bool IsNextCharacterFit();
 
         void SetControlState(const State& state) override;

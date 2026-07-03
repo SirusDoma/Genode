@@ -1,7 +1,7 @@
-﻿////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2018 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2026 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,32 +22,46 @@
 //
 ////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include <Genode/Graphics/Shapes/Polygon.hpp>
+
+#include <cassert>
 
 namespace Gx
 {
+    ////////////////////////////////////////////////////////////
     Polygon::Polygon(const std::size_t pointCount)
     {
         SetPointCount(pointCount);
     }
 
-    Polygon::Polygon(sf::PrimitiveType primitiveType, const std::size_t pointCount) :
+
+    ////////////////////////////////////////////////////////////
+    Polygon::Polygon(const sf::PrimitiveType primitiveType, const std::size_t pointCount) :
         Shape(primitiveType)
     {
         SetPointCount(pointCount);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Polygon::SetPointCount(const std::size_t count)
     {
         m_points.resize(count);
         Update();
     }
 
+
+    ////////////////////////////////////////////////////////////
     std::size_t Polygon::GetPointCount() const
     {
         return m_points.size();
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Polygon::SetPoint(const std::size_t index, const sf::Vector2f& point)
     {
         assert(index < m_points.size() && "Index is out of bounds");
@@ -55,6 +69,8 @@ namespace Gx
         Update();
     }
 
+
+    ////////////////////////////////////////////////////////////
     sf::Vector2f Polygon::GetPoint(const std::size_t index) const
     {
         assert(index < m_points.size() && "Index is out of bounds");

@@ -4,6 +4,8 @@
 
 #include <SFML/Window/Clipboard.hpp>
 
+#include <algorithm>
+
 namespace
 {
     bool IsSeparator(const std::uint32_t ch)
@@ -104,7 +106,77 @@ namespace Gx
 
     sf::Vector2f InputField::FindCharacterPosition(const std::size_t index) const
     {
-        return m_label.FindCharacterPosition(index);
+        const auto positions = ComputeCursorPositions();
+        return m_label.GetTransform().transformPoint(positions[std::min(index, positions.size() - 1)]);
+    }
+
+    std::vector<sf::Vector2f> InputField::ComputeCursorPositions() const
+    {
+        // Compute the position before each codepoint plus the past-the-end position
+        // following the approach demonstrated in the SFML text example
+        std::vector<sf::Vector2f> positions;
+
+        const auto& string = m_label.GetString();
+        positions.reserve(string.getSize() + 1);
+
+        const auto    characterSize = static_cast<float>(m_label.GetCharacterSize());
+        std::uint32_t previousCluster{};
+        sf::Vector2f  previousPosition;
+        float         previousAdvance{};
+        auto          previousDirection = Text::TextDirection::Unspecified;
+
+        for (const auto& glyph : m_label.GetShapedGlyphs())
+        {
+            // Combining marks can't be valid cursor positions so
+            // we just skip over trailing glyphs that share the same
+            // cluster value as the base glyph that precedes them
+            if (!positions.empty() && glyph.cluster == previousCluster)
+                continue;
+
+            sf::Vector2f position{glyph.position.x, glyph.baseline - characterSize};
+
+            // In right-to-left text, the "before grapheme position" is to the right of the glyph
+            if (glyph.textDirection == Text::TextDirection::RightToLeft)
+                position.x += glyph.glyph.bounds.size.x;
+
+            // Interpolate positions of graphemes that were merged into a single glyph e.g. ligatures
+            if (!positions.empty())
+            {
+                const auto subWidth = (position - previousPosition).x / static_cast<float>(glyph.cluster - previousCluster);
+                while (glyph.cluster - previousCluster > 1)
+                {
+                    previousPosition.x += subWidth;
+                    ++previousCluster;
+                    positions.emplace_back(previousPosition);
+                }
+            }
+
+            previousCluster   = glyph.cluster;
+            previousPosition  = position;
+            previousAdvance   = glyph.glyph.advance;
+            previousDirection = glyph.textDirection;
+            positions.emplace_back(position);
+        }
+
+        if (positions.empty())
+        {
+            positions.emplace_back(0.f, 0.f);
+            return positions;
+        }
+
+        // Interpolate the remaining positions when the last glyph is itself a ligature
+        // and add the past-the-end position based on the direction of the text
+        const auto direction = (previousDirection == Text::TextDirection::RightToLeft) ? -1.f : 1.f;
+        const auto subWidth  = direction * (previousAdvance + m_label.GetLetterSpacing()) /
+                               static_cast<float>(string.getSize() - previousCluster);
+
+        while (positions.size() < string.getSize() + 1)
+        {
+            previousPosition.x += subWidth;
+            positions.emplace_back(previousPosition);
+        }
+
+        return positions;
     }
 
     void InputField::SetString(const sf::String& string)
@@ -447,10 +519,12 @@ namespace Gx
         float minDistance  = -1;
         size_t selectIndex = m_caret.Index;
 
-        const auto bounds = GetGlobalBounds();
-        for (size_t index = 0; index <= m_label.GetString().getSize(); index++)
+        const auto bounds    = GetGlobalBounds();
+        const auto positions = ComputeCursorPositions();
+        for (size_t index = 0; index < positions.size(); index++)
         {
-            const float distance = std::abs((FindCharacterPosition(index).x + bounds.position.x) - static_cast<float>(ev.position.x));
+            const auto position  = m_label.GetTransform().transformPoint(positions[index]);
+            const float distance = std::abs((position.x + bounds.position.x) - static_cast<float>(ev.position.x));
             if (minDistance == -1 || distance < minDistance)
             {
                 selectIndex = index;
@@ -656,13 +730,11 @@ namespace Gx
         {
             m_caret.Index--;
             m_caret.SelectionLength = 0;
-            m_label.SetColor(m_label.GetColor());
         }
         else if (ev.code == sf::Keyboard::Key::Right)
         {
             m_caret.Index++;
             m_caret.SelectionLength = 0;
-            m_label.SetColor(m_label.GetColor());
         }
         else
             return;
@@ -704,14 +776,19 @@ namespace Gx
         if (m_caret.SelectionLength < 0)
             start += m_caret.SelectionLength;
 
-        m_label.SetColor(m_label.GetColor());
         if (m_caret.SelectionLength != 0)
         {
-            for (size_t index = 0; index < m_label.GetString().getSize(); index++)
-            {
-                if (index >= start && index < start + std::abs(m_caret.SelectionLength))
-                    m_label.SetColor(m_highlightColor, index);
-            }
+            const size_t end = start + std::abs(m_caret.SelectionLength);
+            m_label.SetGlyphPreProcessor(
+                [this, start, end](const Text::ShapedGlyph& glyph, std::uint32_t&, sf::Color& fillColor, sf::Color&, float&)
+                {
+                    if (glyph.cluster >= start && glyph.cluster < end)
+                        fillColor = m_highlightColor;
+                });
+        }
+        else
+        {
+            m_label.SetGlyphPreProcessor(nullptr);
         }
     }
 }

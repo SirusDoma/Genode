@@ -54,7 +54,7 @@ namespace Gx
         ////////////////////////////////////////////////////////////
         /// @brief Default constructor
         ////////////////////////////////////////////////////////////
-        Sprite();
+        Sprite() = default;
 
         ////////////////////////////////////////////////////////////
         /// @brief Construct the sprite from a source texture
@@ -64,6 +64,11 @@ namespace Gx
         /// @see `SetTexture`
         ////////////////////////////////////////////////////////////
         explicit Sprite(const sf::Texture& texture);
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Disallow construction from a temporary texture
+        ////////////////////////////////////////////////////////////
+        explicit Sprite(const sf::Texture&& texture) = delete;
 
         ////////////////////////////////////////////////////////////
         /// @brief Construct the sprite from a sub-rectangle of a source texture
@@ -76,6 +81,11 @@ namespace Gx
         Sprite(const sf::Texture& texture, const sf::IntRect& rectangle);
 
         ////////////////////////////////////////////////////////////
+        /// @brief Disallow construction from a temporary texture
+        ////////////////////////////////////////////////////////////
+        Sprite(const sf::Texture&& texture, const sf::IntRect& rectangle) = delete;
+
+        ////////////////////////////////////////////////////////////
         /// @brief Change the source texture of the sprite
         ///
         /// @param texture New texture
@@ -84,6 +94,11 @@ namespace Gx
         /// @see `GetTexture`
         ////////////////////////////////////////////////////////////
         void SetTexture(const sf::Texture& texture, bool resetRect = false);
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Disallow setting from a temporary texture
+        ////////////////////////////////////////////////////////////
+        void SetTexture(const sf::Texture&& texture, bool resetRect = false) = delete;
 
         ////////////////////////////////////////////////////////////
         /// @brief Set the sub-rectangle of the texture that the sprite will display
@@ -181,9 +196,9 @@ namespace Gx
         ////////////////////////////////////////////////////////////
         void UpdateVertices();
 
-        std::array<sf::Vertex, 4> m_vertices; ///< Vertices defining the sprite's geometry
-        const sf::Texture* m_texture;         ///< Source texture of the sprite
-        sf::IntRect m_texcoords;              ///< Sub-rectangle of the texture displayed by the sprite
-        BlendMode m_blendMode;                ///< Blend mode used for rendering
+        std::array<sf::Vertex, 4> m_vertices;        //!< Vertices defining the sprite's geometry
+        const sf::Texture* m_texture{};              //!< Source texture of the sprite
+        sf::IntRect m_texcoords;                     //!< Sub-rectangle of the texture displayed by the sprite
+        BlendMode m_blendMode{BlendMode::Auto};      //!< Blend mode used for rendering
     };
 }

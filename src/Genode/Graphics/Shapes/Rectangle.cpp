@@ -1,7 +1,7 @@
-﻿////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2018 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2026 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,32 +22,43 @@
 //
 ////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include <Genode/Graphics/Shapes/Rectangle.hpp>
-#include <cmath>
 
 namespace Gx
 {
+    ////////////////////////////////////////////////////////////
     Rectangle::Rectangle(const sf::Vector2f& size)
     {
         SetSize(size);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Rectangle::SetSize(const sf::Vector2f& size)
     {
         m_size = size;
         Update();
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Vector2f& Rectangle::GetSize() const
     {
         return m_size;
     }
 
+
+    ////////////////////////////////////////////////////////////
     std::size_t Rectangle::GetPointCount() const
     {
         return 4;
     }
 
+
+    ////////////////////////////////////////////////////////////
     sf::Vector2f Rectangle::GetPoint(const std::size_t index) const
     {
         switch (index)
@@ -60,4 +71,10 @@ namespace Gx
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
+    sf::Vector2f Rectangle::GetGeometricCenter() const
+    {
+        return m_size / 2.f;
+    }
 }

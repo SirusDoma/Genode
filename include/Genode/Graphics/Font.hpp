@@ -1,9 +1,7 @@
-#pragma once
-
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2026 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -35,28 +33,34 @@
 #include <SFML/Graphics/Font.hpp>
 
 #include <SFML/System/Vector2.hpp>
-#include <SFML/System/InputStream.hpp>
 
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
 #include <cstddef>
 #include <cstdint>
 
+
+namespace sf
+{
+    class InputStream;
+}
+
 namespace Gx
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Class for loading and manipulating character fonts
+    /// @brief Class for loading and manipulating character fonts
     ///
     ////////////////////////////////////////////////////////////
     class Font
     {
     public:
         ////////////////////////////////////////////////////////////
-        /// \brief Load the font from a file
+        /// brief Load the font from a file
         ///
         /// The supported font formats are: TrueType, Type 1, CFF,
         /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
@@ -64,97 +68,122 @@ namespace Gx
         /// fonts installed on the user's system, thus you can't
         /// load them directly.
         ///
-        /// \warning SFML cannot preload all the font data in this
+        /// @warning SFML cannot preload all the font data in this
         /// function, so the file has to remain accessible until
-        /// the sf::Font object loads a new font or is destroyed.
+        /// the `Gx::Font` object loads a new font or is destroyed.
         ///
-        /// \param filename Path of the font file to load
+        /// @param filename Path of the font file to load
         ///
-        /// \return True if loading succeeded, false if it failed
+        /// @return `true` if loading succeeded, `false` if it failed
         ///
-        /// \see LoadFromMemory, LoadFromStream
+        /// @see `LoadFromMemory`, `LoadFromStream`
         ///
         ////////////////////////////////////////////////////////////
         [[nodiscard]] bool LoadFromFile(const std::filesystem::path& filename);
 
         ////////////////////////////////////////////////////////////
-        /// \brief Load the font from a file in memory
+        /// @brief Load the font from a file in memory
         ///
         /// The supported font formats are: TrueType, Type 1, CFF,
         /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
         ///
-        /// \warning SFML cannot preload all the font data in this
-        /// function, so the buffer pointed by \a data has to remain
-        /// valid until the sf::Font object loads a new font or
+        /// @warning SFML cannot preload all the font data in this
+        /// function, so the buffer pointed by `data` has to remain
+        /// valid until the `Gx::Font` object loads a new font or
         /// is destroyed.
         ///
-        /// \param data        Pointer to the file data in memory
-        /// \param sizeInBytes Size of the data to load, in bytes
+        /// @param data        Pointer to the file data in memory
+        /// @param sizeInBytes Size of the data to load, in bytes
         ///
-        /// \return True if loading succeeded, false if it failed
+        /// @return `true` if loading succeeded, `false` if it failed
         ///
-        /// \see LoadFromFile, LoadFromStream
+        /// @see `LoadFromFile`, `LoadFromStream`
         ///
         ////////////////////////////////////////////////////////////
         [[nodiscard]] bool LoadFromMemory(const void* data, std::size_t sizeInBytes);
 
         ////////////////////////////////////////////////////////////
-        /// \brief Load the font from a custom stream
+        /// @brief Load the font from a custom stream
         ///
         /// The supported font formats are: TrueType, Type 1, CFF,
         /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-        /// Warning: SFML cannot preload all the font data in this
-        /// function, so the contents of \a stream have to remain
-        /// valid as long as the font is used.
         ///
-        /// \warning SFML cannot preload all the font data in this
+        /// @warning SFML cannot preload all the font data in this
         /// function, so the stream has to remain accessible until
-        /// the sf::Font object loads a new font or is destroyed.
+        /// the `Gx::Font` object opens a new font or is destroyed.
         ///
-        /// \param stream Source stream to read from
+        /// @param stream Source stream to read from
         ///
-        /// \return True if loading succeeded, false if it failed
+        /// @return `true` if loading succeeded, `false` if it failed
         ///
-        /// \see LoadFromFile, LoadFromMemory
+        /// @see `LoadFromFile`, `LoadFromMemory`
         ///
         ////////////////////////////////////////////////////////////
         [[nodiscard]] bool LoadFromStream(sf::InputStream& stream);
 
         ////////////////////////////////////////////////////////////
-        /// \brief Get the font information
+        /// @brief Get the font information
         ///
-        /// \return A structure that holds the font information
+        /// @return A structure that holds the font information
         ///
         ////////////////////////////////////////////////////////////
-        const sf::Font::Info& GetInfo() const;
+        [[nodiscard]] const sf::Font::Info& GetInfo() const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Retrieve a glyph of the font
+        /// @brief Retrieve a glyph of the font by glyph ID
         ///
         /// If the font is a bitmap font, not all character sizes
         /// might be available. If the glyph is not available at the
         /// requested size, an empty glyph is returned.
         ///
-        /// You may want to use \ref hasGlyph to determine if the
+        /// This function is only useful for getting the glyphs
+        /// returned in the data from calling `shape`.
+        ///
+        /// Be aware that using a negative value for the outline
+        /// thickness will cause distorted rendering.
+        ///
+        /// @param id               ID of the glyph to get
+        /// @param characterWidth   Reference character width
+        /// @param characterHeight  Reference character height
+        /// @param bold             Retrieve the bold version or the regular one?
+        /// @param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
+        ///
+        /// @return The glyph corresponding to `id`, `characterWidth` and `characterHeight`
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] const sf::Glyph& GetGlyphByID(std::uint32_t id,
+                                                    unsigned int  characterWidth,
+                                                    unsigned int  characterHeight,
+                                                    bool          bold,
+                                                    float         outlineThickness = 0) const;
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Retrieve a glyph of the font
+        ///
+        /// If the font is a bitmap font, not all character sizes
+        /// might be available. If the glyph is not available at the
+        /// requested size, an empty glyph is returned.
+        ///
+        /// You may want to use `hasGlyph` to determine if the
         /// glyph exists before requesting it. If the glyph does not
         /// exist, a font specific default is returned.
         ///
         /// Be aware that using a negative value for the outline
         /// thickness will cause distorted rendering.
         ///
-        /// \param codePoint        Unicode code point of the character to get
-        /// \param characterWidth   Reference character width
-        /// \param characterHeight  Reference character height
-        /// \param bold             Retrieve the bold version or the regular one?
-        /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
+        /// @param codePoint        Unicode code point of the character to get
+        /// @param characterWidth   Reference character width
+        /// @param characterHeight  Reference character height
+        /// @param bold             Retrieve the bold version or the regular one?
+        /// @param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
         ///
-        /// \return The glyph corresponding to \a codePoint and \a characterSize
+        /// @return The glyph corresponding to `codePoint`, `characterWidth` and `characterHeight`
         ///
         ////////////////////////////////////////////////////////////
-        const sf::Glyph& GetGlyph(std::uint32_t codePoint, unsigned int characterWidth, unsigned int characterHeight, bool bold, float outlineThickness = 0) const;
+        [[nodiscard]] const sf::Glyph& GetGlyph(std::uint32_t codePoint, unsigned int characterWidth, unsigned int characterHeight, bool bold, float outlineThickness = 0) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Determine if this font has a glyph representing the requested code point
+        /// @brief Determine if this font has a glyph representing the requested code point
         ///
         /// Most fonts only include a very limited selection of glyphs from
         /// specific Unicode subsets, like Latin, Cyrillic, or Asian characters.
@@ -164,15 +193,15 @@ namespace Gx
         /// code points are included to determine whether a font is suited
         /// to display text in a specific language.
         ///
-        /// \param codePoint Unicode code point to check
+        /// @param codePoint Unicode code point to check
         ///
-        /// \return True if the codepoint has a glyph representation, false otherwise
+        /// @return `true` if the codepoint has a glyph representation, `false` otherwise
         ///
         ////////////////////////////////////////////////////////////
-        bool HasGlyph(std::uint32_t codePoint) const;
+        [[nodiscard]] bool HasGlyph(std::uint32_t codePoint) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Get the kerning offset of two glyphs
+        /// @brief Get the kerning offset of two glyphs
         ///
         /// The kerning is an extra offset (negative) to apply between two
         /// glyphs when rendering them, to make the pair look more "natural".
@@ -180,79 +209,117 @@ namespace Gx
         /// closer than other characters. Most of the glyphs pairs have a
         /// kerning offset of zero, though.
         ///
-        /// \param first           Unicode code point of the first character
-        /// \param second          Unicode code point of the second character
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
-        /// \param bold            Retrieve the bold version or the regular one?
+        /// @param first           Unicode code point of the first character
+        /// @param second          Unicode code point of the second character
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
+        /// @param bold            Retrieve the bold version or the regular one?
         ///
-        /// \return Kerning value for \a first and \a second, in pixels
+        /// @return Kerning value for `first` and `second`, in pixels
         ///
         ////////////////////////////////////////////////////////////
-        float GetKerning(std::uint32_t first, std::uint32_t second, unsigned int characterWidth, unsigned int characterHeight, bool bold = false) const;
+        [[nodiscard]] float GetKerning(char32_t first, char32_t second, unsigned int characterWidth, unsigned int characterHeight, bool bold = false) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Get the line spacing
+        /// @brief Get the ascent
+        ///
+        /// The ascent is the largest distance between the baseline and
+        /// the top of all glyphs in the font.
+        ///
+        /// Be aware that there is no uniform definition of how the
+        /// ascent is calculated. It can vary from font to font.
+        ///
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
+        ///
+        /// @return Ascent, in pixels
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] float GetAscent(unsigned int characterWidth, unsigned int characterHeight) const;
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Get the descent
+        ///
+        /// The descent is the largest distance between the baseline and
+        /// the bottom of all glyphs in the font.
+        ///
+        /// Be aware that there is no uniform definition of how the
+        /// descent is calculated. It can vary from font to font.
+        ///
+        /// The descent shares the same coordinate system as the
+        /// ascent. This means that it will be negative for distances
+        /// below the baseline.
+        ///
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
+        ///
+        /// @return Descent, in pixels
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] float GetDescent(unsigned int characterWidth, unsigned int characterHeight) const;
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Get the line spacing
         ///
         /// Line spacing is the vertical offset to apply between two
         /// consecutive lines of text.
         ///
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
         ///
-        /// \return Line spacing, in pixels
+        /// @return Line spacing, in pixels
         ///
         ////////////////////////////////////////////////////////////
-        float GetLineSpacing(unsigned int characterWidth, unsigned int characterHeight) const;
+        [[nodiscard]] float GetLineSpacing(unsigned int characterWidth, unsigned int characterHeight) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Get the position of the underline
+        /// @brief Get the position of the underline
         ///
         /// Underline position is the vertical offset to apply between the
         /// baseline and the underline.
         ///
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
         ///
-        /// \return Underline position, in pixels
+        /// @return Underline position, in pixels
         ///
-        /// \see GetUnderlineThickness
+        /// @see `GetUnderlineThickness`
         ///
         ////////////////////////////////////////////////////////////
-        float GetUnderlinePosition(unsigned int characterWidth, unsigned int characterHeight) const;
+        [[nodiscard]] float GetUnderlinePosition(unsigned int characterWidth, unsigned int characterHeight) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Get the thickness of the underline
+        /// @brief Get the thickness of the underline
         ///
         /// Underline thickness is the vertical size of the underline.
         ///
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
         ///
-        /// \return Underline thickness, in pixels
+        /// @return Underline thickness, in pixels
         ///
-        /// \see GetUnderlinePosition
+        /// @see `GetUnderlinePosition`
         ///
         ////////////////////////////////////////////////////////////
-        float GetUnderlineThickness(unsigned int characterWidth, unsigned int characterHeight) const;
+        [[nodiscard]] float GetUnderlineThickness(unsigned int characterWidth, unsigned int characterHeight) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Retrieve the texture containing the loaded glyphs of a certain size
+        /// @brief Retrieve the texture containing the loaded glyphs of a certain size
         ///
         /// The contents of the returned texture changes as more glyphs
         /// are requested, thus it is not very relevant. It is mainly
-        /// used internally by sf::Text.
+        /// used internally by `Gx::Text`.
         ///
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
         ///
-        /// \return Texture containing the glyphs of the requested size
+        /// @return Texture containing the glyphs of the requested size
         ///
         ////////////////////////////////////////////////////////////
-        const sf::Texture& GetTexture(unsigned int characterWidth, unsigned int characterHeight) const;
+        [[nodiscard]] const sf::Texture& GetTexture(unsigned int characterWidth, unsigned int characterHeight) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Enable or disable the smooth filter
+        /// @brief Enable or disable the smooth filter
         ///
         /// When the filter is activated, the font appears smoother
         /// so that pixels are less noticeable. However if you want
@@ -260,26 +327,55 @@ namespace Gx
         /// you should disable it.
         /// The smooth filter is enabled by default.
         ///
-        /// \param smooth True to enable smoothing, false to disable it
+        /// @param smooth `true` to enable smoothing, `false` to disable it
         ///
-        /// \see IsSmooth
+        /// @see `IsSmooth`
         ///
         ////////////////////////////////////////////////////////////
         void SetSmooth(bool smooth);
 
         ////////////////////////////////////////////////////////////
-        /// \brief Tell whether the smooth filter is enabled or not
+        /// @brief Tell whether the smooth filter is enabled or not
         ///
-        /// \return True if smoothing is enabled, false if it is disabled
+        /// @return `true` if smoothing is enabled, `false` if it is disabled
         ///
-        /// \see SetSmooth
+        /// @see `SetSmooth`
         ///
         ////////////////////////////////////////////////////////////
         bool IsSmooth() const;
 
+        ////////////////////////////////////////////////////////////
+        /// @brief Make sure that the given size is the current one
+        ///
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
+        ///
+        /// @return `true` on success, `false` if any error happened
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] bool SetCurrentSize(unsigned int characterWidth, unsigned int characterHeight) const;
+
+        ////////////////////////////////////////////////////////////
+        /// Handle
+        ////////////////////////////////////////////////////////////
+        using FontHandle = void*; //!< Font handle used by the shaper
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Get the current font handle
+        ///
+        /// This is used internally by Text to shape unicode text.
+        ///
+        /// @warning Using this handle without care may result in unwanted
+        /// side effects, as it could interfere with SFMLs internal usage!
+        ///
+        /// @return The currently active font handle or nullptr if there is none
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] FontHandle GetFontHandle() const;
+
     private:
         ////////////////////////////////////////////////////////////
-        /// \brief Structure defining a row of glyphs
+        /// @brief Structure defining a row of glyphs
         ///
         ////////////////////////////////////////////////////////////
         struct Row
@@ -297,7 +393,7 @@ namespace Gx
         using GlyphTable = std::unordered_map<std::uint64_t, sf::Glyph>; //!< Table mapping a codepoint to its glyph
 
         ////////////////////////////////////////////////////////////
-        /// \brief Structure defining a page of glyphs
+        /// @brief Structure defining a page of glyphs
         ///
         ////////////////////////////////////////////////////////////
         struct Page
@@ -311,63 +407,58 @@ namespace Gx
         };
 
         ////////////////////////////////////////////////////////////
-        /// \brief Free all the internal resources
+        /// @brief Free all the internal resources
         ///
         ////////////////////////////////////////////////////////////
         void Cleanup();
 
         ////////////////////////////////////////////////////////////
-        /// \brief Find or create the glyphs page corresponding to the given character size
+        /// @brief Load from stream and print errors with custom message
         ///
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] bool LoadFromStreamImpl(sf::InputStream& stream, std::string_view type);
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Find or create the glyphs page corresponding to the given character size
         ///
-        /// \return The glyphs page corresponding to \a characterHeight and \a characterWidth
+        /// @param characterWidth  Reference character width
+        /// @param characterHeight Reference character height
+        ///
+        /// @return The glyphs page corresponding to `characterWidth` and `characterHeight`
         ///
         ////////////////////////////////////////////////////////////
         Page& LoadPage(unsigned int characterWidth, unsigned int characterHeight) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Load a new glyph and store it in the cache
+        /// @brief Load a new glyph and store it in the cache
         ///
-        /// \param codePoint        Unicode code point of the character to load
-        /// \param characterWidth   Reference character width
-        /// \param characterHeight  Reference character height
-        /// \param bold             Retrieve the bold version or the regular one?
-        /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
+        /// @param codePoint        Unicode code point of the character to load
+        /// @param characterWidth   Reference character width
+        /// @param characterHeight  Reference character height
+        /// @param bold             Retrieve the bold version or the regular one?
+        /// @param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
         ///
-        /// \return The glyph corresponding to \a codePoint and \a characterSize
+        /// @return The glyph corresponding to `codePoint`, `characterWidth` and `characterHeight`
         ///
         ////////////////////////////////////////////////////////////
         sf::Glyph LoadGlyph(std::uint32_t codePoint, unsigned int characterWidth, unsigned int characterHeight, bool bold, float outlineThickness) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Find a suitable rectangle within the texture for a glyph
+        /// @brief Find a suitable rectangle within the texture for a glyph
         ///
-        /// \param page Page of glyphs to search in
-        /// \param size Width and height of the rectangle
+        /// @param page Page of glyphs to search in
+        /// @param size Width and height of the rectangle
         ///
-        /// \return Found rectangle within the texture
+        /// @return Found rectangle within the texture
         ///
         ////////////////////////////////////////////////////////////
         sf::IntRect FindGlyphRect(Page& page, const sf::Vector2u& size) const;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Make sure that the given size is the current one
-        ///
-        /// \param characterWidth  Reference character width
-        /// \param characterHeight Reference character height
-        ///
-        /// \return True on success, false if any error happened
-        ///
-        ////////////////////////////////////////////////////////////
-        [[nodiscard]] bool SetCurrentSize(unsigned int characterWidth, unsigned int characterHeight) const;
-
-        ////////////////////////////////////////////////////////////
         // Types
         ////////////////////////////////////////////////////////////
         struct FontHandles;
-        using PageTable = std::unordered_map<std::uint64_t, Page>; //!< Table mapping a character size to its page (texture)
+        using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
 
         ////////////////////////////////////////////////////////////
         // Member data
@@ -377,77 +468,73 @@ namespace Gx
         sf::Font::Info                    m_info;           //!< Information about the font
         mutable PageTable                 m_pages;          //!< Table containing the glyphs pages by character size
         mutable std::vector<std::uint8_t> m_pixelBuffer;    //!< Pixel buffer holding a glyph's pixels before being written to the texture
+        std::shared_ptr<sf::InputStream>  m_stream;         //!< Stream for openFromFile and openFromMemory
     };
 
-}
+} // namespace Gx
+
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Font
-/// \ingroup graphics
+/// @class Gx::Font
+/// @ingroup graphics
 ///
-/// Fonts can be loaded from a file, from memory or from a custom
+/// Fonts can be opened from a file, from memory or from a custom
 /// stream, and supports the most common types of fonts. See
-/// the loadFromFile function for the complete list of supported formats.
+/// the openFromFile function for the complete list of supported formats.
 ///
-/// Once it is loaded, a sf::Font instance provides three
+/// Once it is opened, a `Gx::Font` instance provides three
 /// types of information about the font:
-/// \li Global metrics, such as the line spacing
-/// \li Per-glyph metrics, such as bounding box or kerning
-/// \li Pixel representation of glyphs
+/// @li Global metrics, such as the line spacing
+/// @li Per-glyph metrics, such as bounding box or kerning
+/// @li Pixel representation of glyphs
 ///
 /// Fonts alone are not very useful: they hold the font data
 /// but cannot make anything useful of it. To do so you need to
-/// use the sf::Text class, which is able to properly output text
+/// use the `Gx::Text` class, which is able to properly output text
 /// with several options such as character size, style, color,
 /// position, rotation, etc.
 /// This separation allows more flexibility and better performances:
-/// indeed a sf::Font is a heavy resource, and any operation on it
+/// indeed a `Gx::Font` is a heavy resource, and any operation on it
 /// is slow (often too slow for real-time applications). On the other
-/// side, a sf::Text is a lightweight object which can combine the
-/// glyphs data and metrics of a sf::Font to display any text on a
+/// side, a `Gx::Text` is a lightweight object which can combine the
+/// glyphs data and metrics of a `Gx::Font` to display any text on a
 /// render target.
-/// Note that it is also possible to bind several sf::Text instances
-/// to the same sf::Font.
+/// Note that it is also possible to bind several `Gx::Text` instances
+/// to the same `Gx::Font`.
 ///
-/// It is important to note that the sf::Text instance doesn't
+/// It is important to note that the `Gx::Text` instance doesn't
 /// copy the font that it uses, it only keeps a reference to it.
-/// Thus, a sf::Font must not be destructed while it is
-/// used by a sf::Text (i.e. never write a function that
-/// uses a local sf::Font instance for creating a text).
+/// Thus, a `Gx::Font` must not be destructed while it is
+/// used by a `Gx::Text` (i.e. never write a function that
+/// uses a local `Gx::Font` instance for creating a text).
 ///
 /// Usage example:
-/// \code
-/// // Declare a new font
-/// sf::Font font;
-///
-/// // Load it from a file
-/// if (!font.loadFromFile("arial.ttf"))
-/// {
-///     // error...
-/// }
+/// @code
+/// // Open a new font
+/// const Gx::Font font("arial.ttf");
 ///
 /// // Create a text which uses our font
-/// sf::Text text1(font);
-/// text1.setCharacterSize(30);
-/// text1.setStyle(sf::Text::Regular);
+/// Gx::Text text1(font);
+/// text1.SetCharacterSize(30);
+/// text1.SetStyle(Gx::Text::Regular);
 ///
 /// // Create another text using the same font, but with different parameters
-/// sf::Text text2(font);
-/// text2.setCharacterSize(50);
-/// text2.setStyle(sf::Text::Italic);
-/// \endcode
+/// Gx::Text text2(font);
+/// text2.SetCharacterSize(50);
+/// text2.SetStyle(Gx::Text::Italic);
+/// @endcode
 ///
-/// Apart from loading font files, and passing them to instances
-/// of sf::Text, you should normally not have to deal directly
+/// Apart from opening font files, and passing them to instances
+/// of `Gx::Text`, you should normally not have to deal directly
 /// with this class. However, it may be useful to access the
 /// font metrics or rasterized glyphs for advanced usage.
 ///
 /// Note that if the font is a bitmap font, it is not scalable,
 /// thus not all requested sizes will be available to use. This
-/// needs to be taken into consideration when using sf::Text.
+/// needs to be taken into consideration when using `Gx::Text`.
 /// If you need to display text of a certain size, make sure the
 /// corresponding bitmap font that supports that size is used.
 ///
-/// \see sf::Text
+/// @see `Gx::Text`
 ///
 ////////////////////////////////////////////////////////////

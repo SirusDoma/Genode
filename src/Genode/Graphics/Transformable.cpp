@@ -1,7 +1,7 @@
-﻿////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2018 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2026 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,22 +22,23 @@
 //
 ////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include <Genode/Graphics/Transformable.hpp>
+
 #include <cmath>
 
 namespace Gx
 {
+    ////////////////////////////////////////////////////////////
     void Transformable::SetPosition(const float x, const float y)
     {
-        if (x == m_position.x && y == m_position.y)
-            return;
-
-        m_position.x                 = x;
-        m_position.y                 = y;
-        m_transformNeedUpdate        = true;
-        m_inverseTransformNeedUpdate = true;
+        SetPosition(sf::Vector2f(x, y));
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetPosition(const sf::Vector2f& position)
     {
         if (m_position == position)
@@ -48,37 +49,35 @@ namespace Gx
         m_inverseTransformNeedUpdate = true;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetRotation(const float angle)
     {
-        if (m_rotation == sf::degrees(angle))
-            return;
-
-        m_rotation                   = sf::degrees(angle);
-        m_transformNeedUpdate        = true;
-        m_inverseTransformNeedUpdate = true;
+        SetRotation(sf::degrees(angle));
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetRotation(const sf::Angle& angle)
     {
-        if (m_rotation == angle)
+        const auto rotation = angle.wrapUnsigned();
+        if (m_rotation == rotation)
             return;
 
-        m_rotation                   = angle;
+        m_rotation                   = rotation;
         m_transformNeedUpdate        = true;
         m_inverseTransformNeedUpdate = true;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetScale(const float factorX, const float factorY)
     {
-        if (factorX == m_position.x && factorY == m_position.y)
-            return;
-
-        m_scale.x                    = factorX;
-        m_scale.y                    = factorY;
-        m_transformNeedUpdate        = true;
-        m_inverseTransformNeedUpdate = true;
+        SetScale(sf::Vector2f(factorX, factorY));
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetScale(const sf::Vector2f& factors)
     {
         if (m_scale == factors)
@@ -89,17 +88,15 @@ namespace Gx
         m_inverseTransformNeedUpdate = true;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetOrigin(const float x, const float y)
     {
-        if (x == m_origin.x && y == m_origin.y)
-            return;
-
-        m_origin.x = x;
-        m_origin.y = y;
-        m_transformNeedUpdate = true;
-        m_inverseTransformNeedUpdate = true;
+        SetOrigin(sf::Vector2f(x, y));
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::SetOrigin(const sf::Vector2f& origin)
     {
         if (m_origin == origin)
@@ -110,56 +107,78 @@ namespace Gx
         m_inverseTransformNeedUpdate = true;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Vector2f& Transformable::GetPosition() const
     {
         return m_position;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Angle& Transformable::GetRotation() const
     {
         return m_rotation;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Vector2f& Transformable::GetScale() const
     {
         return m_scale;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Vector2f& Transformable::GetOrigin() const
     {
         return m_origin;
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::Move(const float offsetX, const float offsetY)
     {
         SetPosition(m_position.x + offsetX, m_position.y + offsetY);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::Move(const sf::Vector2f& offset)
     {
         SetPosition(m_position + offset);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::Rotate(const float angle)
     {
         SetRotation(m_rotation + sf::degrees(angle));
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::Rotate(const sf::Angle& angle)
     {
         SetRotation(m_rotation + angle);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::Scale(const float factorX, const float factorY)
     {
         SetScale(m_scale.x * factorX, m_scale.y * factorY);
     }
 
+
+    ////////////////////////////////////////////////////////////
     void Transformable::Scale(const sf::Vector2f& factor)
     {
         SetScale({m_scale.x * factor.x, m_scale.y * factor.y});
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Transform& Transformable::GetTransform() const
     {
         // Recompute the combined transform if needed
@@ -186,12 +205,14 @@ namespace Gx
         return m_transform;
     }
 
+
+    ////////////////////////////////////////////////////////////
     const sf::Transform& Transformable::GetInverseTransform() const
     {
         // Recompute the inverse transform if needed
         if (m_inverseTransformNeedUpdate)
         {
-            m_inverseTransform = GetTransform().getInverse();
+            m_inverseTransform           = GetTransform().getInverse();
             m_inverseTransformNeedUpdate = false;
         }
 
