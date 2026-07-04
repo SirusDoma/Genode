@@ -103,11 +103,9 @@ namespace Gx
         Register<B, R>(StringHelper::GetTypeName<R>(false), builder);
     }
 
-    template<typename R, typename L>
+    template<typename R, typename L, std::enable_if_t<std::is_base_of_v<ResourceLoader<R>, L>, int>>
     std::unique_ptr<ResourceLoaderFactory::LoaderBuilder<R>> ResourceLoaderFactory::CreateLoaderBuilder()
     {
-        static_assert(std::is_base_of_v<ResourceLoader<R>, L>, "Parameter L must be a Gx::ResourceLoader<R>");
-        
         auto factory = std::make_unique<LoaderBuilder<R>>();
         factory->Instantiate = []
         {
@@ -159,12 +157,10 @@ namespace Gx
         loaders[LoaderKey(id)] = std::move(factory);
     }
 
-    template<typename B, typename R, typename L, typename U>
+    template<typename B, typename R, typename L, typename U,
+        std::enable_if_t<std::is_base_of_v<B, R> && std::is_base_of_v<ResourceLoader<R>, L>, int>>
     void ResourceLoaderFactory::Register(const type_identity_t<U>& id)
     {
-        static_assert(std::is_base_of_v<B, R>, "Parameter R must be a B");
-        static_assert(std::is_base_of_v<ResourceLoader<R>, L>, "Parameter L must be a Gx::ResourceLoader<R>");
-
         auto factory = CreateLoaderBuilder<R, L>();
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::move(factory);
@@ -179,11 +175,10 @@ namespace Gx
         baseLoaders[LoaderKey(id)] = std::move(baseFactory);
     }
 
-    template<typename B, typename R, typename U>
+    template<typename B, typename R, typename U,
+        std::enable_if_t<std::is_base_of_v<B, R>, int>>
     void ResourceLoaderFactory::Register(const type_identity_t<U>& id, std::function<std::unique_ptr<ResourceLoader<R>>()> builder)
     {
-        static_assert(std::is_base_of_v<B, R>, "Parameter R must be a B");
-
         auto factory = std::make_unique<LoaderBuilder<R>>();
         factory->Instantiate = builder;
         auto& loaders = m_loaders[typeid(R)];
@@ -228,11 +223,10 @@ namespace Gx
         }});
     }
 
-    template<typename B, typename R, typename U, typename ... Args>
+    template<typename B, typename R, typename U, typename ... Args,
+        std::enable_if_t<std::is_base_of_v<B, R>, int>>
     void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator)
     {
-        static_assert(std::is_base_of_v<B, R>, "Parameter R must be a B");
-
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<R>>
         (
@@ -292,11 +286,10 @@ namespace Gx
         Reuse<S, B, R>(StringHelper::GetTypeName<R>(false), instantiator);
     }
 
-    template<typename S, typename B, typename R, typename U, typename ... Args>
+    template<typename S, typename B, typename R, typename U, typename ... Args,
+        std::enable_if_t<std::is_base_of_v<S, B>, int>>
     void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator)
     {
-        static_assert(std::is_base_of_v<S, B>, "Parameter B must be a S");
-
         Reuse<B, R, U>(id, instantiator);
 
         auto& rootLoaders = m_loaders[typeid(S)];
