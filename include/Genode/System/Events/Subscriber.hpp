@@ -3,6 +3,7 @@
 #include <Genode/System/Events/EventHandler.hpp>
 #include <Genode/System/Events/Registration.hpp>
 
+#include <functional>
 #include <tuple>
 #include <type_traits>
 
@@ -47,6 +48,17 @@ namespace Gx
         SubscriberBase() = default;
 
         ////////////////////////////////////////////////////////////
+        /// @brief Initializes a new empty instance with an unsubscription callback
+        ///
+        /// The callback is invoked once when the subscriber
+        /// unsubscribes itself and cannot be altered afterwards.
+        ////////////////////////////////////////////////////////////
+        explicit SubscriberBase(std::function<void()> onUnsubscribe) :
+            m_unsubscribeCallback(std::move(onUnsubscribe))
+        {
+        }
+
+        ////////////////////////////////////////////////////////////
         /// @brief Destroys the subscriber, unsubscribing it if still registered
         ////////////////////////////////////////////////////////////
         ~SubscriberBase()
@@ -69,6 +81,9 @@ namespace Gx
         ////////////////////////////////////////////////////////////
         EventDispatcher* m_dispatcher{};  //!< Dispatcher the subscriber is registered on, `nullptr` when inactive
         Registration     m_registration;  //!< Identity of the subscription within the dispatcher
+
+    private:
+        std::function<void()> m_unsubscribeCallback;  //!< Invoked once upon unsubscription
     };
 
     ////////////////////////////////////////////////////////////
@@ -105,7 +120,8 @@ namespace Gx
         ////////////////////////////////////////////////////////////
         /// @brief Initializes a new instance registered on the specified dispatcher
         ////////////////////////////////////////////////////////////
-        SubscriberImpl(EventDispatcher& dispatcher, TKey key, EventHandler<TArgs...> handler);
+        SubscriberImpl(EventDispatcher& dispatcher, TKey key, EventHandler<TArgs...> handler,
+                       std::function<void()> onUnsubscribe = nullptr);
 
         ////////////////////////////////////////////////////////////
         /// @brief Determines whether the subscriber is registered for the specified key

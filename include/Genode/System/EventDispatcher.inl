@@ -8,7 +8,11 @@ namespace Gx
 {
     ////////////////////////////////////////////////////////////
     template <typename TKey, typename... TArgs>
-    SubscriberImpl<TKey, TArgs...>::SubscriberImpl(EventDispatcher& dispatcher, TKey key, EventHandler<TArgs...> handler) :
+    SubscriberImpl<TKey, TArgs...>::SubscriberImpl(
+        EventDispatcher& dispatcher,
+        TKey key, EventHandler<TArgs...> handler,
+        std::function<void()> onUnsubscribe
+    ) : SubscriberBase(std::move(onUnsubscribe)),
         m_key(std::move(key)),
         m_handler(std::move(handler))
     {
@@ -36,11 +40,11 @@ namespace Gx
 
     ////////////////////////////////////////////////////////////
     template <typename TKey, typename THandler, typename>
-    auto EventDispatcher::On(TKey&& key, THandler&& handler)
+    auto EventDispatcher::On(TKey&& key, THandler&& handler, std::function<void()> onUnsubscribe)
     {
         using Type = priv::SubscriberType<TKey, THandler>;
 
-        return Type(*this, std::forward<TKey>(key), std::forward<THandler>(handler));
+        return Type(*this, std::forward<TKey>(key), std::forward<THandler>(handler), std::move(onUnsubscribe));
     }
 
 

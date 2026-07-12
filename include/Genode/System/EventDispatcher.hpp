@@ -50,8 +50,11 @@ namespace Gx
         /// Generic callables (e.g. lambdas taking `const auto&`)
         /// cannot be deduced.
         ///
-        /// @param key     The key to subscribe to
-        /// @param handler The handler invoked with the dispatched arguments
+        /// @param key           The key to subscribe to
+        /// @param handler       The handler invoked with the dispatched arguments
+        /// @param onUnsubscribe Invoked once when the returned subscriber
+        ///                      unsubscribes itself (typically on destruction);
+        ///                      immutable after subscription
         ///
         /// @return A `Subscriber` of the key and handler argument types
         ///         that unsubscribes the handler when destroyed
@@ -59,7 +62,7 @@ namespace Gx
         /// @see `Off`, `Dispatch`, `Enqueue`, `Subscriber`
         ////////////////////////////////////////////////////////////
         template <typename TKey, typename THandler, typename = std::void_t<typename priv::EventHandlerTraits<std::decay_t<THandler>>::Arguments>>
-        [[nodiscard]] auto On(TKey&& key, THandler&& handler);
+        [[nodiscard]] auto On(TKey&& key, THandler&& handler, std::function<void()> onUnsubscribe = nullptr);
 
         ////////////////////////////////////////////////////////////
         /// @brief Unsubscribes the specified subscriber if it is registered on this dispatcher
