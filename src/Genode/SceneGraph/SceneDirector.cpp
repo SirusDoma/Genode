@@ -50,7 +50,7 @@ namespace Gx
     Context& SceneDirector::GetContext() const
     {
         if (const auto app = dynamic_cast<Application*>(&m_surface))
-            return app->GetContext();
+            return app->GetModule<Context>();
 
         return m_context;
     }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Genode/System/Module.hpp>
+
 #include <memory>
 #include <functional>
 #include <unordered_map>
@@ -9,7 +11,7 @@
 
 namespace Gx
 {
-    class Context
+    class Context : public Module
     {
         static constexpr std::size_t MaxConstructorArity = 100;
 

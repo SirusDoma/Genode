@@ -1,12 +1,13 @@
 #pragma once
 
-#include <any>
 #include <Genode/Entities.hpp>
 #include <Genode/System/Context.hpp>
+#include <Genode/System/Module.hpp>
 #include <Genode/IO/Resource.hpp>
 
 #include <SFML/Graphics.hpp>
 
+#include <any>
 #include <typeindex>
 #include <stack>
 #include <Genode/IO/ResourceContext.hpp>
@@ -19,7 +20,7 @@ namespace Gx
 
     class Scene;
     class Application;
-    class SceneDirector final : public Renderable, public Updatable, public Inputable
+    class SceneDirector final : public Module, public Renderable, public Updatable, public Inputable
     {
     public:
         explicit SceneDirector(Application& app);

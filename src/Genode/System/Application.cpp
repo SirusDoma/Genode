@@ -17,8 +17,6 @@ namespace Gx
     }
 
     Application::Application(const std::string& title, const sf::VideoMode& mode, const sf::View& view, const bool fullScreen, const sf::ContextSettings& settings) :
-        m_director(SceneDirector(*this)),
-        m_context(),
         m_state(fullScreen ? sf::State::Fullscreen : sf::State::Windowed),
         m_mode(mode),
         m_view(view),
@@ -30,6 +28,11 @@ namespace Gx
         m_fullScreen(fullScreen),
         m_closeRequested(false)
     {
+        Install<SceneDirector>([this] (const Context&)
+        {
+            return std::make_unique<SceneDirector>(*this);
+        });
+
         ResourceLoaderFactory::BindContext(m_context);
     }
 
@@ -85,17 +88,20 @@ namespace Gx
                     else if (event->is<sf::Event::FocusGained>())
                     {
                         OnFocusChanged(true);
-                        m_director.Focus(true);
+                        if (const auto director = FindModule<SceneDirector>())
+                            director->Focus(true);
                     }
                     else if (event->is<sf::Event::FocusLost>())
                     {
                         OnFocusChanged(false);
-                        m_director.Focus(false);
+                        if (const auto director = FindModule<SceneDirector>())
+                            director->Focus(false);
                     }
                     else if (const auto e = event->getIf<sf::Event::Resized>())
                     {
                         OnResized(e->size);
-                        m_director.Resize(e->size);
+                        if (const auto director = FindModule<SceneDirector>())
+                            director->Resize(e->size);
                     }
                     else
                     {
@@ -145,7 +151,8 @@ namespace Gx
             m_window->display();
 
             // Execute post-processing events
-            m_director.ProcessDelegates();
+            if (const auto director = FindModule<SceneDirector>())
+                director->ProcessDelegates();
 
             // Mark initial frame has been processed
             initial = false;
@@ -165,36 +172,36 @@ namespace Gx
         return m_settings;
     }
 
-    SceneDirector& Application::GetSceneDirector() const
-    {
-        return m_director;
-    }
-
     void Application::Update(const sf::Time& delta)
     {
-        m_director.Update(delta);
+        for (const auto& entry : m_modules)
+        {
+            if (entry.AsUpdatable)
+                entry.AsUpdatable->Update(delta);
+        }
     }
 
     RenderStates Application::Render(RenderSurface& surface, const RenderStates states) const
     {
-        surface.Render(m_director, states);
+        for (const auto& entry : m_modules)
+        {
+            if (entry.AsRenderable)
+                surface.Render(*entry.AsRenderable, states);
+        }
+
         return states;
     }
 
     void Application::Close()
     {
         // Ask game permission first before closing
-        m_closeRequested = OnClose() && m_director.Close();
+        const auto director = FindModule<SceneDirector>();
+        m_closeRequested = OnClose() && (!director || director->Close());
     }
 
     const std::string& Application::GetTitle() const
     {
         return m_title;
-    }
-
-    Context& Application::GetContext() const
-    {
-        return m_context;
     }
 
     unsigned int Application::GetRenderFrequency() const
@@ -285,8 +292,12 @@ namespace Gx
             };
         }
 
-        // Pass input into active scene via director
-        m_director.Input(ev);
+        // Pass input into modules (e.g. the active scene via the scene director)
+        for (const auto& entry : m_modules)
+        {
+            if (entry.AsInputable)
+                entry.AsInputable->Input(ev);
+        }
     }
 
     bool Application::OnClose()

@@ -2,9 +2,14 @@
 
 #include <Genode/Graphics/RenderSurface.hpp>
 #include <Genode/SceneGraph/SceneDirector.hpp>
+#include <Genode/System/Module.hpp>
 
 #include <SFML/Window.hpp>
+#include <functional>
 #include <memory>
+#include <type_traits>
+#include <typeindex>
+#include <vector>
 
 namespace Gx
 {
@@ -22,10 +27,30 @@ namespace Gx
         void Close();
 
         [[nodiscard]] const std::string& GetTitle() const;
-        [[nodiscard]] Context& GetContext() const;
-
-        [[nodiscard]] SceneDirector& GetSceneDirector() const;
         [[nodiscard]] unsigned int GetRenderFrequency() const;
+
+        template <typename TModule>
+        std::enable_if_t<std::is_base_of_v<Module, TModule>, void>
+        Install();
+
+        template <typename TInterface, typename TConcrete>
+        std::enable_if_t<
+            std::is_base_of_v<Module, TInterface> &&
+            std::is_base_of_v<TInterface, TConcrete>, void
+        >
+        Install();
+
+        template <typename TModule>
+        std::enable_if_t<std::is_base_of_v<Module, TModule>, void>
+        Install(std::function<std::unique_ptr<TModule>(const Context&)> builder);
+
+        template <typename TModule>
+        std::enable_if_t<std::is_base_of_v<Module, TModule>, bool>
+        Uninstall();
+
+        template <typename TModule>
+        [[nodiscard]] std::enable_if_t<std::is_base_of_v<Module, TModule>, TModule&>
+        GetModule() const;
 
         [[nodiscard]] sf::State GetWindowState() const;
         void SetWindowState(sf::State state);
@@ -79,14 +104,29 @@ namespace Gx
         virtual sf::VideoMode GetVideoMode() const;
 
     private:
+        struct InternalModule
+        {
+            std::type_index Type;
+            Module*         Instance{nullptr};
+            Renderable*     AsRenderable{nullptr};
+            Updatable*      AsUpdatable{nullptr};
+            Inputable*      AsInputable{nullptr};
+        };
+
+        template <typename TModule>
+        void AddModule();
+
+        template <typename TModule>
+        TModule* FindModule() const;
+
         void CreateMainWindow();
         void UpdateCursor(const sf::Event& ev) const;
 
         inline static Application* m_instance = nullptr;
 
         mutable std::unique_ptr<sf::RenderWindow> m_window;
-        mutable SceneDirector m_director;
         mutable Context m_context;
+        std::vector<InternalModule> m_modules;
 
         sf::State m_state;
         sf::VideoMode m_mode;
@@ -102,3 +142,5 @@ namespace Gx
         sf::Color m_clearColor = sf::Color::Black;
     };
 }
+
+#include <Genode/System/Application.inl>
