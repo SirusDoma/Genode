@@ -81,13 +81,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
+# -- Boost PFR
+FetchContent_Declare(
+    pfr
+    GIT_REPOSITORY https://github.com/boostorg/pfr.git
+    GIT_TAG        2.2.0
+)
+FetchContent_MakeAvailable(pfr)
+
 # Application includes
 target_include_directories(${LIBRARY_NAME} PRIVATE src)
 target_include_directories(${LIBRARY_NAME} PRIVATE include)
 target_include_directories(${LIBRARY_NAME} PRIVATE extlibs/headers)
 
 # Link SFML
-target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window)
+target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window SFML::Network)
 
 # Link FreeType, SheenBidi and HarfBuzz
 target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype SheenBidi::SheenBidi HarfBuzz::HarfBuzz)
@@ -97,4 +105,7 @@ target_link_libraries(${LIBRARY_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 # Link fmt
 target_link_libraries(${LIBRARY_NAME} PRIVATE fmt::fmt)
+
+# Link Boost PFR
+target_link_libraries(${LIBRARY_NAME} PRIVATE Boost::pfr)
 
