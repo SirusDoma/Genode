@@ -45,6 +45,7 @@
 #include FT_STROKER_H
 #include FT_SYSTEM_H
 
+#include <atomic>
 #include <ostream>
 #include <utility>
 

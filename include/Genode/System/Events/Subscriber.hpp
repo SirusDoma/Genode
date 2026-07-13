@@ -9,6 +9,8 @@
 
 namespace Gx
 {
+    class EventDispatcher;
+
     ////////////////////////////////////////////////////////////
     /// @brief Represents the type-erased base of the subscribers
     ///
