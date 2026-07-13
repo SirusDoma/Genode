@@ -2,6 +2,7 @@
 
 #include <Genode/IO/ResourceLoaderFactory.hpp>
 #include <Genode/IO/Json.hpp>
+#include <Genode/Entities/ContextAware.hpp>
 #include <Genode/Graphics/Font.hpp>
 #include <Genode/System/Context.hpp>
 #include <Genode/System/Exception.hpp>
@@ -120,19 +121,7 @@ namespace Gx
             else
                 loader = std::make_unique<L>();
 
-            loader->SetResourceInstantiator(std::function{[] (const ResourceContext& ctx)
-            {
-                if constexpr (!std::is_default_constructible_v<R>)
-                {
-                    if (m_context)
-                        return m_context->Instantiate<R>();
-
-                    throw Exception(std::string(typeid(R).name()) + " loader is not constructible without application context");
-                }
-                else
-                    return std::make_unique<R>();
-            }});
-
+            loader->SetResourceInstantiator([] (const ResourceContext& ctx) { return Instantiate<R>(); });
             return loader;
         };
         
@@ -211,15 +200,7 @@ namespace Gx
     {
         Reuse<B, R, U>(id, std::function<std::unique_ptr<R>(const ResourceContext&)>{[] (const ResourceContext&)
         {
-            if constexpr (!std::is_default_constructible_v<R>)
-            {
-                if (m_context)
-                    return m_context->Instantiate<R>();
-
-                throw Exception(std::string(typeid(R).name()) + " loader is not constructible without application context");
-            }
-            else
-                return std::make_unique<R>();
+            return Instantiate<R>();
         }});
     }
 
@@ -266,17 +247,9 @@ namespace Gx
     template<typename S, typename B, typename R, typename U>
     void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id)
     {
-        Reuse<S, B, R>(id, std::function{[] (const ResourceContext& _)
+        Reuse<S, B, R>(id, std::function{[] (const ResourceContext&)
         {
-            if constexpr (!std::is_default_constructible_v<R>)
-            {
-                if (m_context)
-                    return m_context->Instantiate<R>();
-
-                throw Exception(std::string(typeid(R).name()) + " is not constructible without application context");
-            }
-            else
-                return std::make_unique<R>();
+            return Instantiate<R>();
         }});
     }
 
@@ -378,5 +351,47 @@ namespace Gx
         }
 
         return nullptr;
+    }
+
+    template<typename R>
+    std::unique_ptr<R> ResourceLoaderFactory::Instantiate()
+    {
+        if constexpr (!std::is_default_constructible_v<R>)
+        {
+            if (!m_context)
+                throw Exception(std::string(typeid(R).name()) + " loader is not constructible without application context");
+
+            if constexpr (std::is_base_of_v<ContextAware, R>)
+            {
+                auto context  = m_context->CreateScope();
+                auto instance = context.Instantiate<R>();
+
+                const auto provider = dynamic_cast<ContextAware*>(instance.get());
+                provider->SetContext(std::move(context));
+
+                return instance;
+            }
+            else
+            {
+                return m_context->Instantiate<R>();
+            }
+        }
+        else
+        {
+            if constexpr (std::is_base_of_v<ContextAware, R>)
+            {
+                auto context  = m_context->CreateScope();
+                auto instance = context.Instantiate<R>();
+
+                const auto provider = dynamic_cast<ContextAware*>(instance.get());
+                provider->SetContext(std::move(context));
+
+                return instance;
+            }
+            else
+            {
+                return std::make_unique<R>();
+            }
+        }
     }
 }

@@ -138,10 +138,10 @@ namespace Gx
         template <typename T>
         [[nodiscard]] std::unique_ptr<T> Instantiate() const;
 
-        [[nodiscard]] Context CreateScope()
+        [[nodiscard]] Context CreateScope() const
         {
             Context scope;
-            scope.m_parent = this;
+            scope.m_parent = const_cast<Context*>(this);
             for (auto& [key, entry] : m_entries)
             {
                 if (entry->Lifetime == Scope::Singleton)

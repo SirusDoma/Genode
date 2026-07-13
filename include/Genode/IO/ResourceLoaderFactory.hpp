@@ -113,6 +113,9 @@ namespace Gx
         template<typename R, typename L, std::enable_if_t<std::is_base_of_v<ResourceLoader<R>, L>, int> = 0>
         static std::unique_ptr<LoaderBuilder<R>> CreateLoaderBuilder();
 
+        template<typename R>
+        static std::unique_ptr<R> Instantiate();
+
         struct LoaderKey
         {
             template<typename T>

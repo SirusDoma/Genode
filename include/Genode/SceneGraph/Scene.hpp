@@ -10,19 +10,24 @@
 #include <Genode/Entities/Presentable.hpp>
 
 #include <Genode/System/Context.hpp>
+#include <Genode/Entities/ContextAware.hpp>
 
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Window/Event.hpp>
 
 #include <queue>
-#include <set>
 
 namespace Gx
 {
     class Application;
     class SceneDirector;
-    class Scene : public virtual Node, public RenderableContainer, public UpdatableContainer,
-                  public InputableContainer, public TaskContainer, public Presentable::Parent
+    class Scene : public virtual Node,
+                  public RenderableContainer,
+                  public UpdatableContainer,
+                  public InputableContainer,
+                  public TaskContainer,
+                  public ContextAware,
+                  public Presentable::Parent
     {
     public:
         friend class SceneDirector;
@@ -33,7 +38,7 @@ namespace Gx
 
         [[nodiscard]] Application& GetApplication() const;
         [[nodiscard]] SceneDirector& GetDirector() const;
-        [[nodiscard]] Context& GetContext();
+        [[nodiscard]] Context& GetContext() override;
 
         [[nodiscard]] const sf::View& GetView() const;
         [[nodiscard]] const sf::View& GetDefaultView() const;
@@ -69,7 +74,7 @@ namespace Gx
         void SetVisible(const bool visible) override {}
 
         void SetDirector(SceneDirector& director);
-        void SetContext(Context&& context);
+        void SetContext(Context&& context) override;
 
         void ProcessDelegates();
 

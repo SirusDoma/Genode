@@ -26,7 +26,7 @@ namespace Gx
             m_currentScene->SetDirector(*this);
 
             if (!m_currentScene->m_context.has_value())
-                m_currentScene->SetContext(GetContext().Capture());
+                m_currentScene->SetContext(GetContext().CreateScope());
 
             if (m_initializer)
                 m_initializer();
