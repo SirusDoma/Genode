@@ -220,7 +220,7 @@ namespace Gx
         Dismiss();
     }
 
-    std::string Dialog::GetPromptString() const
+    sf::String Dialog::GetPromptString() const
     {
         if (m_promptLabel)
             return m_promptLabel->GetString();

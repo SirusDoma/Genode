@@ -53,7 +53,7 @@ namespace Gx
         [[nodiscard]] bool IsAccepted() const;
 
         [[nodiscard]] Label* GetLabel() const;
-        [[nodiscard]] std::string GetPromptString() const;
+        [[nodiscard]] sf::String GetPromptString() const;
         [[nodiscard]] Button* GetAcceptButton() const;
         [[nodiscard]] Button* GetCancelButton() const;
 

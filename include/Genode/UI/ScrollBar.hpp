@@ -9,6 +9,10 @@ namespace Gx
     {
     public:
         enum class ScrollOrientation { Horizontal, Vertical };
+        struct ValueChangedEvent : Event
+        {
+            float Value;
+        };
 
         ScrollBar();
         ScrollBar(const sf::Texture& texture, const sf::FloatRect& bounds, ScrollBar::ScrollOrientation orientation = ScrollOrientation::Horizontal);
@@ -31,7 +35,7 @@ namespace Gx
 
         [[nodiscard]] float GetValue() const;
         void SetValue(float value);
-        void SetValueChangedCallback(std::function<void(ScrollBar&, float)> callback);
+        void SetValueChangedCallback(std::function<void(ScrollBar&, ValueChangedEvent&)> callback);
 
         [[nodiscard]] float GetStep() const;
         void SetStep(float step);
@@ -63,6 +67,6 @@ namespace Gx
         sf::Vector2f m_anchorPoint;
 
         ScrollOrientation m_orientation;
-        std::function<void(ScrollBar&, float)> m_onValueChanged;
+        std::function<void(ScrollBar&, ValueChangedEvent&)> m_onValueChanged;
     };
 }

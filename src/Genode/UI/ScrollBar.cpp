@@ -123,13 +123,16 @@ namespace Gx
         {
             m_value = value;
             if (m_onValueChanged)
-                m_onValueChanged(*this, m_value);
+            {
+                auto uiEvent = ValueChangedEvent{{false, GetControlState()}, m_value};
+                m_onValueChanged(*this, uiEvent);
+            }
 
             Invalidate();
         }
     }
 
-    void ScrollBar::SetValueChangedCallback(std::function<void(ScrollBar &, float)> callback)
+    void ScrollBar::SetValueChangedCallback(std::function<void(ScrollBar&, ValueChangedEvent&)> callback)
     {
         m_onValueChanged = std::move(callback);
     }
@@ -252,7 +255,10 @@ namespace Gx
             {
                 m_value = value;
                 if (m_onValueChanged)
-                    m_onValueChanged(*this, m_value);
+                {
+                    auto uiEvent = ValueChangedEvent{{false, GetControlState()}, m_value};
+                    m_onValueChanged(*this, uiEvent);
+                }
 
                 m_sprite.SetPosition(position);
             }
