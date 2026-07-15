@@ -20,6 +20,12 @@ namespace Gx
         ResourceLoader() = default;
         virtual ~ResourceLoader() = default;
 
+        template<typename U>
+        static void OnRegistered(const U&) { }
+
+        template<typename U>
+        static void OnRemoved(const U&) { }
+
         [[nodiscard]] virtual bool IsStreaming() const { return false; }
 
         [[nodiscard]] std::type_index GetResourceType() const { return m_type; }

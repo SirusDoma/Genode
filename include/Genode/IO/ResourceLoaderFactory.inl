@@ -10,6 +10,7 @@
 
 #include <string>
 #include <filesystem>
+#include <vector>
 
 namespace Gx
 {
@@ -120,8 +121,12 @@ namespace Gx
     void ResourceLoaderFactory::Register(const type_identity_t<U>& id)
     {
         auto factory = CreateLoaderBuilder<R, L>();
+        factory->OnRemoved = [id] { L::OnRemoved(id); };
+
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::move(factory);
+
+        L::OnRegistered(id);
     }
 
     template<typename R, typename U>
@@ -144,41 +149,40 @@ namespace Gx
         std::enable_if_t<std::is_base_of_v<B, R>, int>>
     void ResourceLoaderFactory::Map(const type_identity_t<U>& id)
     {
-        auto& loaders = m_loaders[typeid(B)];
-        loaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<B>>
-        (
-            [=]
-            {
-                return std::make_unique<AdaptorLoader<B, R>>(id);
-            }
-        );
-    }
+        if (const auto it = m_loaders.find(typeid(R)); it != m_loaders.end() && it->second.find(LoaderKey(id)) != it->second.end())
+        {
+            auto& loaders = m_loaders[typeid(B)];
+            loaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<B>>
+            (
+                [=]
+                {
+                    return std::make_unique<AdaptorLoader<B, R>>(id);
+                }
+            );
 
-    template<typename B, typename R>
-    void ResourceLoaderFactory::Reuse()
-    {
-        Reuse<B, R>(StringHelper::GetTypeName<R>(false));
-    }
+            return;
+        }
 
-    template<typename B, typename R>
-    void ResourceLoaderFactory::Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator)
-    {
-        Reuse<B, R>(StringHelper::GetTypeName<R>(false), instantiator);
-    }
-
-    template<typename B, typename R, typename U>
-    void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id)
-    {
-        Reuse<B, R, U>(id, std::function<std::unique_ptr<R>(const ResourceContext&)>{[] (const ResourceContext&)
+        Map<B, R, U>(id, std::function<std::unique_ptr<R>(const ResourceContext&)>{[] (const ResourceContext&)
         {
             return Instantiate<R>();
         }});
     }
 
+    template<typename B, typename R>
+    void ResourceLoaderFactory::Map(const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator)
+    {
+        Map<B, R>(StringHelper::GetTypeName<R>(false), instantiator);
+    }
+
     template<typename B, typename R, typename U,
         std::enable_if_t<std::is_base_of_v<B, R>, int>>
-    void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator)
+    void ResourceLoaderFactory::Map(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator)
     {
+        auto& baseLoaders = m_loaders[typeid(B)];
+        if (baseLoaders.find(LoaderKey(StringHelper::GetTypeName<B>(false))) == baseLoaders.end())
+            throw Exception(StringHelper::GetTypeName<R>(false) + " cannot be mapped: no loader registered for " + StringHelper::GetTypeName<R>(false) + " nor " + StringHelper::GetTypeName<B>(false));
+
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<R>>
         (
@@ -191,8 +195,7 @@ namespace Gx
             }
         );
 
-        auto& baseLoaders = m_loaders[typeid(B)];
-        if (baseLoaders.find(LoaderKey(StringHelper::GetTypeName<B>(false))) != baseLoaders.end() && baseLoaders.find(LoaderKey(id)) == baseLoaders.end())
+        if (baseLoaders.find(LoaderKey(id)) == baseLoaders.end())
         {
             baseLoaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<B>>
             (
@@ -209,7 +212,23 @@ namespace Gx
     template<typename R>
     bool ResourceLoaderFactory::Remove()
     {
-        return m_loaders.erase(typeid(R)) != 0;
+        const auto it = m_loaders.find(typeid(R));
+        if (it == m_loaders.end())
+            return false;
+
+        std::vector<std::function<void()>> callbacks;
+        for (const auto& [key, builder] : it->second)
+        {
+            if (builder->OnRemoved)
+                callbacks.push_back(std::move(builder->OnRemoved));
+        }
+
+        m_loaders.erase(it);
+
+        for (const auto& callback : callbacks)
+            callback();
+
+        return true;
     }
 
     template<typename R, typename U>
@@ -220,12 +239,20 @@ namespace Gx
             return false;
 
         auto& loaders = it->second;
-        const bool removed = loaders.erase(LoaderKey(id)) != 0;
+        const auto entry = loaders.find(LoaderKey(id));
+        if (entry == loaders.end())
+            return false;
+
+        auto callback = std::move(entry->second->OnRemoved);
+        loaders.erase(entry);
 
         if (loaders.empty())
             m_loaders.erase(it);
-            
-        return removed;
+
+        if (callback)
+            callback();
+
+        return true;
     }
 
     template<typename R>

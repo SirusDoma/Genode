@@ -46,17 +46,11 @@ namespace Gx
         static void Map(const type_identity_t<U>& id);
 
         template<typename B, typename R>
-        static void Reuse();
-
-        template<typename B, typename R, typename U = std::string>
-        static void Reuse(const type_identity_t<U>& id);
-
-        template<typename B, typename R>
-        static void Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator);
+        static void Map(const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator);
 
         template<typename B, typename R, typename U = std::string,
             std::enable_if_t<std::is_base_of_v<B, R>, int> = 0>
-        static void Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator);
+        static void Map(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator);
 
         template<typename R>
         static bool Remove();
@@ -76,6 +70,8 @@ namespace Gx
         struct BaseLoaderBuilder
         {
             virtual ~BaseLoaderBuilder() = default;
+
+            std::function<void()> OnRemoved;
         };
 
         template<typename R>
