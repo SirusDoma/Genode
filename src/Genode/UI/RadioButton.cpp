@@ -22,7 +22,10 @@ namespace Gx
             }
 
             if (IsEnabled() && m_onCheckStateChanged)
-                m_onCheckStateChanged(*this);
+            {
+                auto uiEvent = Event{false, GetControlState()};
+                m_onCheckStateChanged(*this, uiEvent);
+            }
         }
     }
 
@@ -36,7 +39,7 @@ namespace Gx
             SetCheckedState(true);
     }
 
-    void RadioButton::SetCheckStateChangeCallback(std::function<void(RadioButton&)> callback)
+    void RadioButton::SetCheckStateChangeCallback(std::function<void(RadioButton&, Control::Event&)> callback)
     {
         m_onCheckStateChanged = std::move(callback);
     }

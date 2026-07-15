@@ -15,11 +15,14 @@ namespace Gx
             Invalidate();
 
             if (m_onCheckStateChanged)
-                m_onCheckStateChanged(*this);
+            {
+                auto uiEvent = Event{false, GetControlState()};
+                m_onCheckStateChanged(*this, uiEvent);
+            }
         }
     }
 
-    void ToggleButton::SetCheckStateChangeCallback(std::function<void(ToggleButton&)> callback)
+    void ToggleButton::SetCheckStateChangeCallback(std::function<void(ToggleButton&, Control::Event&)> callback)
     {
         m_onCheckStateChanged = std::move(callback);
     }
