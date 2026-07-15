@@ -11,6 +11,10 @@ namespace Gx
     {
     protected:
         InputableContainer() = default;
+        InputableContainer(const InputableContainer&) = default;
+        InputableContainer(InputableContainer&&) = default;
+
+        InputableContainer& operator=(const InputableContainer&) = default;
 
         std::vector<Inputable*> GetInputableChildren() const;
 

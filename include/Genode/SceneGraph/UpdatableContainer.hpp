@@ -9,6 +9,10 @@ namespace Gx
     {
     protected:
         UpdatableContainer() = default;
+        UpdatableContainer(const UpdatableContainer&) = default;
+        UpdatableContainer(UpdatableContainer&&) = default;
+
+        UpdatableContainer& operator=(const UpdatableContainer&) = default;
 
         std::vector<Updatable*> GetUpdatableChildren() const;
 

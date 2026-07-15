@@ -42,6 +42,10 @@ namespace Gx
 
     protected:
         Control();
+        Control(const Control&) = default;
+        Control(Control&&) = default;
+
+        Control& operator=(const Control&) = default;
 
         [[nodiscard]] virtual State GetControlState() const;
         virtual void SetControlState(const State& state);

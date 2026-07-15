@@ -9,6 +9,10 @@ namespace Gx
     {
     protected:
         RenderableContainer() = default;
+        RenderableContainer(const RenderableContainer&) = default;
+        RenderableContainer(RenderableContainer&&) = default;
+
+        RenderableContainer& operator=(const RenderableContainer&) = default;
 
         std::vector<Renderable*> GetRenderableChildren() const;
 

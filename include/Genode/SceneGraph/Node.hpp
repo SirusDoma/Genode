@@ -13,13 +13,11 @@ namespace Gx
     class Node : public Transformable
     {
     public:
+        Node(const Node& other);
+        Node(Node&&) noexcept = default;
         ~Node() override = default;
 
-        Node(const Node& other);
         Node& operator=(const Node& other);
-
-        Node(Node&&) noexcept = default;
-        Node& operator=(Node&&) = default;
 
         [[nodiscard]] static bool Match(const std::string& id, const std::string& pattern);
         [[nodiscard]] static bool Match(const Node& node, const std::string& pattern);

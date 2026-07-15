@@ -8,6 +8,10 @@ namespace Gx
     {
     public:
         RenderBatchContainer() = default;
+        RenderBatchContainer(const RenderBatchContainer&) = default;
+        RenderBatchContainer(RenderBatchContainer&&) = default;
+
+        RenderBatchContainer& operator=(const RenderBatchContainer&) = default;
 
         void SetBatchMode(SpriteBatch::BatchMode batchMode) const;
 

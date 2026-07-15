@@ -3,6 +3,7 @@
 #include <Genode/IO/Json.hpp>
 #include <Genode/IO/IOException.hpp>
 #include <Genode/IO/Resource.hpp>
+#include <Genode/IO/BufferedInputStream.hpp>
 #include <Genode/IO/ResourceLoader.hpp>
 #include <Genode/IO/ResourceLoaderFactory.hpp>
 #include <Genode/IO/ResourceContainer.hpp>
