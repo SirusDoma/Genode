@@ -35,22 +35,15 @@ namespace Gx
         template<typename R>
         static void Register(std::function<std::unique_ptr<ResourceLoader<R>>()> builder);
 
-        template<typename B, typename R, typename L>
-        static void Register();
-
-        template<typename B, typename R>
-        static void Register(std::function<std::unique_ptr<ResourceLoader<R>>()> builder);
-
         template<typename R, typename U = std::string>
         static void Register(const type_identity_t<U>& id, std::function<std::unique_ptr<ResourceLoader<R>>()> builder);
 
-        template<typename B, typename R, typename L, typename U = std::string,
-            std::enable_if_t<std::is_base_of_v<B, R> && std::is_base_of_v<ResourceLoader<R>, L>, int> = 0>
-        static void Register(const type_identity_t<U>& id);
+        template<typename B, typename ... Rs>
+        static void Map();
 
         template<typename B, typename R, typename U = std::string,
             std::enable_if_t<std::is_base_of_v<B, R>, int> = 0>
-        static void Register(const type_identity_t<U>& id, std::function<std::unique_ptr<ResourceLoader<R>>()> builder);
+        static void Map(const type_identity_t<U>& id);
 
         template<typename B, typename R>
         static void Reuse();
@@ -58,25 +51,12 @@ namespace Gx
         template<typename B, typename R, typename U = std::string>
         static void Reuse(const type_identity_t<U>& id);
 
-        template<typename B, typename R, typename ... Args>
-        static void Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator);
+        template<typename B, typename R>
+        static void Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator);
 
-        template<typename B, typename R, typename U = std::string, typename ... Args,
+        template<typename B, typename R, typename U = std::string,
             std::enable_if_t<std::is_base_of_v<B, R>, int> = 0>
-        static void Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator);
-
-        template<typename S, typename B, typename R>
-        static void Reuse();
-
-        template<typename S, typename B, typename R, typename U = std::string>
-        static void Reuse(const type_identity_t<U>& id);
-
-        template<typename S, typename B, typename R, typename ... Args>
-        static void Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator);
-
-        template<typename S, typename B, typename R, typename U = std::string, typename ... Args,
-            std::enable_if_t<std::is_base_of_v<S, B>, int> = 0>
-        static void Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator);
+        static void Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator);
 
         template<typename R>
         static bool Remove();

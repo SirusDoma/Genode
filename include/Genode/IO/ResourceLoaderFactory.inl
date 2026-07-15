@@ -92,18 +92,6 @@ namespace Gx
         Register<R>(StringHelper::GetTypeName<R>(false), builder);
     }
 
-    template<typename B, typename R, typename L>
-    void ResourceLoaderFactory::Register()
-    {
-        Register<B, R, L>(StringHelper::GetTypeName<R>(false));
-    }
-
-    template<typename B, typename R>
-    void ResourceLoaderFactory::Register(std::function<std::unique_ptr<ResourceLoader<R>>()> builder)
-    {
-        Register<B, R>(StringHelper::GetTypeName<R>(false), builder);
-    }
-
     template<typename R, typename L, std::enable_if_t<std::is_base_of_v<ResourceLoader<R>, L>, int>>
     std::unique_ptr<ResourceLoaderFactory::LoaderBuilder<R>> ResourceLoaderFactory::CreateLoaderBuilder()
     {
@@ -146,41 +134,24 @@ namespace Gx
         loaders[LoaderKey(id)] = std::move(factory);
     }
 
-    template<typename B, typename R, typename L, typename U,
-        std::enable_if_t<std::is_base_of_v<B, R> && std::is_base_of_v<ResourceLoader<R>, L>, int>>
-    void ResourceLoaderFactory::Register(const type_identity_t<U>& id)
+    template<typename B, typename ... Rs>
+    void ResourceLoaderFactory::Map()
     {
-        auto factory = CreateLoaderBuilder<R, L>();
-        auto& loaders = m_loaders[typeid(R)];
-        loaders[LoaderKey(id)] = std::move(factory);
-
-        auto baseFactory = std::make_unique<LoaderBuilder<B>>();
-        baseFactory->Instantiate = [=]()
-        {
-            return std::make_unique<AdaptorLoader<B, R>>(id);
-        };
-
-        auto& baseLoaders = m_loaders[typeid(B)];
-        baseLoaders[LoaderKey(id)] = std::move(baseFactory);
+        (Map<B, Rs>(StringHelper::GetTypeName<Rs>(false)), ...);
     }
 
     template<typename B, typename R, typename U,
         std::enable_if_t<std::is_base_of_v<B, R>, int>>
-    void ResourceLoaderFactory::Register(const type_identity_t<U>& id, std::function<std::unique_ptr<ResourceLoader<R>>()> builder)
+    void ResourceLoaderFactory::Map(const type_identity_t<U>& id)
     {
-        auto factory = std::make_unique<LoaderBuilder<R>>();
-        factory->Instantiate = builder;
-        auto& loaders = m_loaders[typeid(R)];
-        loaders[LoaderKey(id)] = std::move(factory);
-
-        auto baseFactory = std::make_unique<LoaderBuilder<B>>();
-        baseFactory->Instantiate = [=]()
-        {
-            return std::make_unique<AdaptorLoader<B, R>>(id);
-        };
-
-        auto& baseLoaders = m_loaders[typeid(B)];
-        baseLoaders[LoaderKey(id)] = std::move(baseFactory);
+        auto& loaders = m_loaders[typeid(B)];
+        loaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<B>>
+        (
+            [=]
+            {
+                return std::make_unique<AdaptorLoader<B, R>>(id);
+            }
+        );
     }
 
     template<typename B, typename R>
@@ -189,8 +160,8 @@ namespace Gx
         Reuse<B, R>(StringHelper::GetTypeName<R>(false));
     }
 
-    template<typename B, typename R, typename ... Args>
-    void ResourceLoaderFactory::Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator)
+    template<typename B, typename R>
+    void ResourceLoaderFactory::Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator)
     {
         Reuse<B, R>(StringHelper::GetTypeName<R>(false), instantiator);
     }
@@ -204,9 +175,9 @@ namespace Gx
         }});
     }
 
-    template<typename B, typename R, typename U, typename ... Args,
+    template<typename B, typename R, typename U,
         std::enable_if_t<std::is_base_of_v<B, R>, int>>
-    void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator)
+    void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&)>& instantiator)
     {
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<R>>
@@ -221,68 +192,17 @@ namespace Gx
         );
 
         auto& baseLoaders = m_loaders[typeid(B)];
-        if (const auto it = baseLoaders.find(LoaderKey(StringHelper::GetTypeName<B>(false))); it != baseLoaders.end() && baseLoaders.find(LoaderKey(id)) == baseLoaders.end())
+        if (baseLoaders.find(LoaderKey(StringHelper::GetTypeName<B>(false))) != baseLoaders.end() && baseLoaders.find(LoaderKey(id)) == baseLoaders.end())
         {
-            if (auto builder = dynamic_cast<LoaderBuilder<B>*>(it->second.get()); builder)
-            {
-                baseLoaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<B>>
-                (
-                    [=]
-                    {
-                        auto loader = builder->Instantiate();
-                        loader->SetResourceInstantiator(instantiator);
-                        return loader;
-                    }
-                );
-            }
-        }
-    }
-
-    template<typename S, typename B, typename R>
-    void ResourceLoaderFactory::Reuse()
-    {
-        Reuse<S, B, R>(StringHelper::GetTypeName<R>(false));
-    }
-
-    template<typename S, typename B, typename R, typename U>
-    void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id)
-    {
-        Reuse<S, B, R>(id, std::function{[] (const ResourceContext&)
-        {
-            return Instantiate<R>();
-        }});
-    }
-
-    template<typename S, typename B, typename R, typename ... Args>
-    void ResourceLoaderFactory::Reuse(const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator)
-    {
-        Reuse<S, B, R>(StringHelper::GetTypeName<R>(false), instantiator);
-    }
-
-    template<typename S, typename B, typename R, typename U, typename ... Args,
-        std::enable_if_t<std::is_base_of_v<S, B>, int>>
-    void ResourceLoaderFactory::Reuse(const type_identity_t<U>& id, const std::function<std::unique_ptr<R>(const ResourceContext&, Args...)>& instantiator)
-    {
-        Reuse<B, R, U>(id, instantiator);
-
-        auto& rootLoaders = m_loaders[typeid(S)];
-        if (const auto it = rootLoaders.find(LoaderKey(StringHelper::GetTypeName<B>(false))); it != rootLoaders.end() && rootLoaders.find(LoaderKey(id)) == rootLoaders.end())
-        {
-            if (auto builder = dynamic_cast<LoaderBuilder<S>*>(it->second.get()); builder)
-            {
-                rootLoaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<S>>
-                (
-                    [=]
-                    {
-                        auto loader = builder->Instantiate();
-                        if (auto adaptor = dynamic_cast<AdaptorLoader<S, B>*>(loader.get()); adaptor)
-                            adaptor->GetLoader()->SetResourceInstantiator(instantiator);
-
-                        loader->SetResourceInstantiator(instantiator);
-                        return loader;
-                    }
-                );
-            }
+            baseLoaders[LoaderKey(id)] = std::make_unique<LoaderBuilder<B>>
+            (
+                [=]
+                {
+                    auto loader = CreateLoader<B>();
+                    loader->SetResourceInstantiator(instantiator);
+                    return loader;
+                }
+            );
         }
     }
 
