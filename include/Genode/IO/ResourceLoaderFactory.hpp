@@ -32,10 +32,10 @@ namespace Gx
         template<typename R, typename L, typename U = std::string>
         static void Register(const type_identity_t<U>& id);
 
-        template<typename R>
+        template<typename R, typename L>
         static void Register(std::function<std::unique_ptr<ResourceLoader<R>>()> builder);
 
-        template<typename R, typename U = std::string>
+        template<typename R, typename L, typename U = std::string>
         static void Register(const type_identity_t<U>& id, std::function<std::unique_ptr<ResourceLoader<R>>()> builder);
 
         template<typename B, typename ... Rs>

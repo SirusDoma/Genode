@@ -13,7 +13,12 @@ namespace Gx
 
         RenderBatchContainer& operator=(const RenderBatchContainer&) = default;
 
-        void SetBatchMode(SpriteBatch::BatchMode batchMode) const;
+        void SetBatchMode(SpriteBatch::Mode batchMode) const;
+
+        void SetBatchUsage(SpriteBatch::Usage batchUsage) const;
+        [[nodiscard]] SpriteBatch::Usage GetBatchUsage() const;
+
+        [[nodiscard]] VertexPool& GetVertexPool() const;
 
     protected:
         void Update(const sf::Time& delta) override;
@@ -21,6 +26,6 @@ namespace Gx
 
     private:
         // Batcher is kept separate so it doesn't interfere with SceneGraph hierarchy
-        mutable SpriteBatch m_batcher{SpriteBatch::BatchMode::LayerSort};
+        mutable SpriteBatch m_batcher{SpriteBatch::Mode::LayerSort};
     };
 }

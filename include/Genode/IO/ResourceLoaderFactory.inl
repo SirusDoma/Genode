@@ -87,10 +87,10 @@ namespace Gx
         Register<R, L>(StringHelper::GetTypeName<R>(false));
     }
 
-    template<typename R>
+    template<typename R, typename L>
     void ResourceLoaderFactory::Register(std::function<std::unique_ptr<ResourceLoader<R>>()> builder)
     {
-        Register<R>(StringHelper::GetTypeName<R>(false), builder);
+        Register<R, L>(StringHelper::GetTypeName<R>(false), builder);
     }
 
     template<typename R, typename L, std::enable_if_t<std::is_base_of_v<ResourceLoader<R>, L>, int>>
@@ -123,20 +123,25 @@ namespace Gx
         auto factory = CreateLoaderBuilder<R, L>();
         factory->OnRemoved = [id] { L::OnRemoved(id); };
 
+        auto builder = factory->Instantiate;
+
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::move(factory);
 
-        L::OnRegistered(id);
+        L::OnRegistered(id, builder);
     }
 
-    template<typename R, typename U>
+    template<typename R, typename L, typename U>
     void ResourceLoaderFactory::Register(const type_identity_t<U>& id, std::function<std::unique_ptr<ResourceLoader<R>>()> builder)
     {
         auto factory = std::make_unique<LoaderBuilder<R>>();
         factory->Instantiate = builder;
+        factory->OnRemoved = [id] { L::OnRemoved(id); };
 
         auto& loaders = m_loaders[typeid(R)];
         loaders[LoaderKey(id)] = std::move(factory);
+
+        L::OnRegistered(id, builder);
     }
 
     template<typename B, typename ... Rs>

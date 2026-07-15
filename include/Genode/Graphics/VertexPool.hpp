@@ -13,7 +13,7 @@
 namespace Gx
 {
     class VertexPool;
-    class VertexSpan final
+    class VertexSpan final : public Renderable
     {
     public:
         using value_type             = sf::Vertex;
@@ -58,6 +58,8 @@ namespace Gx
 
         [[nodiscard]] const std::vector<sf::Vertex>& container() const noexcept;
 
+        RenderStates Render(RenderSurface& surface, RenderStates states) const override;
+
         VertexSpan& operator=(VertexSpan&& other) noexcept;
 
         [[nodiscard]] bool operator==(const VertexSpan& other) const noexcept;
@@ -68,7 +70,7 @@ namespace Gx
 
         VertexSpan(VertexPool& pool, size_type offset, size_type size);
 
-        VertexPool& m_pool;
+        VertexPool* m_pool = nullptr;
         size_type   m_offset = {};
         size_type   m_size   = {};
     };
@@ -115,7 +117,7 @@ namespace Gx
         [[nodiscard]] std::optional<std::size_t> Scan(std::size_t size) const;
         void Defragment();
 
-        sf::PrimitiveType m_primitive = sf::PrimitiveType::Triangles;
+        sf::PrimitiveType m_primitive      = sf::PrimitiveType::Triangles;
         std::vector<sf::Vertex> m_vertices = {};
         std::vector<Segment> m_segments    = {};
     };

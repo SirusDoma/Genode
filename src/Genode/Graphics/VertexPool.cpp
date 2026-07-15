@@ -15,7 +15,7 @@ namespace Gx
         m_segments.emplace_back(0, capacity, false);
     }
 
-    VertexPool::VertexPool(sf::PrimitiveType primitiveType, const std::size_t capacity) :
+    VertexPool::VertexPool(const sf::PrimitiveType primitiveType, const std::size_t capacity) :
         VertexPool(capacity)
     {
         m_primitive = primitiveType;
@@ -45,19 +45,22 @@ namespace Gx
             return { *this, newOffset, size };
         }
 
-        auto& segment = m_segments[*segmentIdx];
-        if (segment.m_size > size)
+        const auto offset = m_segments[*segmentIdx].m_offset;
+        if (m_segments[*segmentIdx].m_size > size)
         {
             m_segments.insert(
                 m_segments.begin() + static_cast<VertexSpan::difference_type>(*segmentIdx) + 1,
-                Segment(segment.m_offset + size, segment.m_size - size, false)
+                Segment(offset + size, m_segments[*segmentIdx].m_size - size, false)
             );
 
-            segment.m_size = size;
+            m_segments[*segmentIdx].m_size = size;
         }
 
-        segment.m_inUse = true;
-        return { *this, segment.m_offset, size };
+        m_segments[*segmentIdx].m_inUse = true;
+        if (m_vertices.size() < offset + size)
+            m_vertices.resize(offset + size);
+
+        return { *this, offset, size };
     }
 
     void VertexPool::Return(VertexSpan& span)
@@ -208,7 +211,7 @@ namespace Gx
 namespace Gx
 {
     VertexSpan::VertexSpan(VertexPool& pool, const size_type offset, const size_type size) :
-        m_pool(pool),
+        m_pool(&pool),
         m_offset(offset),
         m_size(size)
     {
@@ -229,77 +232,77 @@ namespace Gx
     VertexSpan::reference VertexSpan::operator[](const size_type idx)
     {
         assert(idx < m_size);
-        return m_pool.m_vertices[m_offset + idx];
+        return m_pool->m_vertices[m_offset + idx];
     }
 
     VertexSpan::const_reference VertexSpan::operator[](const size_type idx) const
     {
         assert(idx < m_size);
-        return m_pool.m_vertices[m_offset + idx];
+        return m_pool->m_vertices[m_offset + idx];
     }
 
     VertexSpan::reference VertexSpan::front()
     {
         assert(!empty());
-        return m_pool.m_vertices[m_offset];
+        return m_pool->m_vertices[m_offset];
     }
 
     VertexSpan::const_reference VertexSpan::front() const
     {
         assert(!empty());
-        return m_pool.m_vertices[m_offset];
+        return m_pool->m_vertices[m_offset];
     }
 
     VertexSpan::reference VertexSpan::back()
     {
         assert(!empty());
-        return m_pool.m_vertices[m_offset + m_size - 1];
+        return m_pool->m_vertices[m_offset + m_size - 1];
     }
 
     VertexSpan::const_reference VertexSpan::back() const
     {
         assert(!empty());
-        return m_pool.m_vertices[m_offset + m_size - 1];
+        return m_pool->m_vertices[m_offset + m_size - 1];
     }
 
     VertexSpan::pointer VertexSpan::data()
     {
-        return m_pool.m_vertices.data() + m_offset;
+        return m_pool->m_vertices.data() + m_offset;
     }
 
     VertexSpan::const_pointer VertexSpan::data() const
     {
-        return m_pool.m_vertices.data() + m_offset;
+        return m_pool->m_vertices.data() + m_offset;
     }
 
     VertexSpan::iterator VertexSpan::begin() noexcept
     {
-        return m_pool.m_vertices.begin() + static_cast<difference_type>(m_offset);
+        return m_pool->m_vertices.begin() + static_cast<difference_type>(m_offset);
     }
 
     VertexSpan::const_iterator VertexSpan::begin() const noexcept
     {
-        return m_pool.m_vertices.begin() + static_cast<difference_type>(m_offset);
+        return m_pool->m_vertices.begin() + static_cast<difference_type>(m_offset);
     }
 
     VertexSpan::const_iterator VertexSpan::cbegin() const noexcept
     {
-        return m_pool.m_vertices.cbegin() + static_cast<difference_type>(m_offset);
+        return m_pool->m_vertices.cbegin() + static_cast<difference_type>(m_offset);
     }
 
     VertexSpan::iterator VertexSpan::end() noexcept
     {
-        return m_pool.m_vertices.begin() + static_cast<difference_type>(m_offset) + static_cast<difference_type>(m_size);
+        return m_pool->m_vertices.begin() + static_cast<difference_type>(m_offset) + static_cast<difference_type>(m_size);
     }
 
     VertexSpan::const_iterator VertexSpan::end() const noexcept
     {
-        return m_pool.m_vertices.begin() + static_cast<difference_type>(m_offset) + static_cast<difference_type>(m_size);
+        return m_pool->m_vertices.begin() + static_cast<difference_type>(m_offset) + static_cast<difference_type>(m_size);
     }
 
     VertexSpan::const_iterator VertexSpan::cend() const noexcept
     {
-        return m_pool.m_vertices.cbegin() + static_cast<difference_type>(m_offset) + static_cast<difference_type>(m_size);
+        return m_pool->m_vertices.cbegin() + static_cast<difference_type>(m_offset) + static_cast<difference_type>(m_size);
     }
 
     VertexSpan::reverse_iterator VertexSpan::rbegin() noexcept
@@ -349,12 +352,18 @@ namespace Gx
 
     const std::vector<sf::Vertex>& VertexSpan::container() const noexcept
     {
-        return m_pool.GetVertices();
+        return m_pool->GetVertices();
+    }
+
+    RenderStates VertexSpan::Render(RenderSurface& surface, RenderStates states) const
+    {
+        surface.Render(data(), m_size, m_pool->m_primitive, states);
+        return states;
     }
 
     bool VertexSpan::operator==(const VertexSpan& other) const noexcept
     {
-        return &m_pool == &other.m_pool &&
+        return m_pool == other.m_pool &&
                m_offset == other.m_offset &&
                m_size == other.m_size;
     }

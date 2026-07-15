@@ -34,19 +34,89 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 
 #include <algorithm>
+#include <cstring>
 #include <numeric>
+
 namespace Gx
 {
-    SpriteBatch::SpriteBatch(const BatchMode batchMode) :
+    SpriteBatch::SpriteBatch(const Mode batchMode) :
         m_batchMode(batchMode)
     {
     }
 
     ////////////////////////////////////////////////////////////
-    void SpriteBatch::SetBatchMode(const BatchMode batchMode)
+    SpriteBatch::SpriteBatch(const Mode batchMode, const Usage batchUsage) :
+        m_batchMode(batchMode),
+        m_batchUsage(batchUsage)
     {
-        m_batchMode      = batchMode;
-        m_updateRequired = true;
+    }
+
+    ////////////////////////////////////////////////////////////
+    SpriteBatch::SpriteBatch(const SpriteBatch& other) :
+        Node(other),
+        RenderableContainer(other),
+        UpdatableContainer(other),
+        m_triangles(other.m_triangles),
+        m_unsortedVertices(other.m_unsortedVertices),
+        m_flushedTriangles(other.m_flushedTriangles),
+        m_batchMode(other.m_batchMode),
+        m_batchUsage(other.m_batchUsage),
+        m_blendMode(other.m_blendMode)
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    SpriteBatch& SpriteBatch::operator=(const SpriteBatch& other)
+    {
+        if (this == &other)
+            return *this;
+
+        Node::operator=(other);
+        RenderableContainer::operator=(other);
+
+        if (m_span)
+        {
+            m_pool.Return(*m_span);
+            m_span.reset();
+        }
+
+        m_triangles        = other.m_triangles;
+        m_unsortedVertices = other.m_unsortedVertices;
+        m_flushedTriangles  = other.m_flushedTriangles;
+        m_batchMode        = other.m_batchMode;
+        m_batchUsage       = other.m_batchUsage;
+        m_blendMode        = other.m_blendMode;
+        m_rebuildRequired  = true;
+        m_batches.clear();
+        m_order.clear();
+
+        return *this;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void SpriteBatch::SetBatchMode(const Mode batchMode)
+    {
+        m_batchMode       = batchMode;
+        m_rebuildRequired = true;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void SpriteBatch::SetBatchUsage(const Usage batchUsage)
+    {
+        m_batchUsage      = batchUsage;
+        m_rebuildRequired = true;
+    }
+
+    ////////////////////////////////////////////////////////////
+    SpriteBatch::Usage SpriteBatch::GetBatchUsage() const
+    {
+        return m_batchUsage;
+    }
+
+    ////////////////////////////////////////////////////////////
+    VertexPool& SpriteBatch::GetVertexPool()
+    {
+        return m_pool;
     }
 
     ////////////////////////////////////////////////////////////
@@ -105,28 +175,45 @@ namespace Gx
         if (!IsVisible())
             return states;
 
-        // Apply render states
         states.transform *= GetTransform();
         states.blendMode  = m_blendMode.value_or(states.blendMode);
 
-        // Calculate and populate the vertices to render
         auto& batcher = const_cast<SpriteBatch&>(*this);
-        RenderableContainer::Render(batcher, states);
-        UpdateBatch();
+        auto localStates      = states;
+        localStates.transform = sf::Transform::Identity;
+        RenderableContainer::Render(batcher, localStates);
 
-        // Render the batches
-        auto cstates = states;
-        std::size_t startTriangle = 0;
-        for (const auto& batch : m_batches)
+        if (m_batchUsage == Usage::Dynamic)
         {
-            cstates.texture = batch.texture;
-            surface.Render(&m_vertices[startTriangle], batch.vertexCount, sf::PrimitiveType::Triangles, cstates);
+            if (m_rebuildRequired || IsStructureChanged())
+                RebuildBatch();
+            else
+                RewriteVertices();
 
-            startTriangle += batch.vertexCount;
+            batcher.Flush();
+        }
+        else
+        {
+            RebuildBatch();
+            batcher.m_triangles.clear();
+            batcher.m_unsortedVertices.clear();
         }
 
-        // Signal clear is required in next render/update
-        batcher.ClearBatch(true); // HACK: Call non-const in Render
+        m_rebuildRequired = false;
+
+        auto cstates = states;
+        if (const sf::Vertex* vertices = m_span ? m_span->data() : nullptr)
+        {
+            std::size_t startVertex = 0;
+            for (const auto& batch : m_batches)
+            {
+                cstates.texture = batch.texture;
+                surface.Render(vertices + startVertex, batch.vertexCount, sf::PrimitiveType::Triangles, cstates);
+
+                startVertex += batch.vertexCount;
+            }
+        }
+
         return states;
     }
 
@@ -151,8 +238,6 @@ namespace Gx
     {
         if (m_blendMode.has_value() && m_blendMode != states.blendMode)
             throw NotSupportedException("Multiple blending mode usage within single batch is not supported");
-
-        ClearBatch();
 
         m_blendMode = states.blendMode;
         Batch(vertices, vertexCount, type, states.texture, states.transform, states.Layer);
@@ -198,118 +283,115 @@ namespace Gx
         m_unsortedVertices.push_back({transform * a.position, a.color, a.texCoords});
         m_unsortedVertices.push_back({transform * b.position, b.color, b.texCoords});
         m_unsortedVertices.push_back({transform * c.position, c.color, c.texCoords});
-
-        m_updateRequired = true;
     }
 
     ////////////////////////////////////////////////////////////
-    void SpriteBatch::UpdateBatch(const bool force) const
+    bool SpriteBatch::IsStructureChanged() const
     {
-        if (!force && !m_updateRequired)
-            return;
+        if (m_triangles.size() != m_flushedTriangles.size())
+            return true;
 
-        if (m_batchMode == BatchMode::Deferred)
+        return !std::equal(m_triangles.begin(), m_triangles.end(), m_flushedTriangles.begin(),
+                           [](const TriangleInfo& a, const TriangleInfo& b)
+                           { return a.texture == b.texture && a.level == b.level; });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void SpriteBatch::RebuildBatch() const
+    {
+        m_batches.clear();
+        m_order.resize(m_triangles.size());
+        std::iota(m_order.begin(), m_order.end(), 0);
+
+        if (m_batchMode == Mode::TextureSort)
         {
-            // Batch based on sf::Texture change
-            std::size_t    startIndex  = 0;
-            std::size_t    nextIndex   = 0;
-            const sf::Texture* lastTexture = nullptr;
+            const auto comp = [this](const std::size_t a, const std::size_t b)
+            { return m_triangles[a].texture < m_triangles[b].texture; };
 
-            while (nextIndex < m_triangles.size())
-            {
-                if (const sf::Texture* nextTexture = m_triangles[nextIndex].texture; nextTexture != lastTexture)
-                {
-                    m_batches.emplace_back(lastTexture, (nextIndex - startIndex) * 3);
-                    lastTexture = nextTexture;
-                    startIndex  = nextIndex;
-                }
-
-                nextIndex++;
-            }
-
-            // Deal with leftovers
-            if (startIndex != m_triangles.size())
-                m_batches.emplace_back(lastTexture, (m_triangles.size() - startIndex) * 3);
-
-            m_vertices = m_unsortedVertices;
+            std::stable_sort(m_order.begin(), m_order.end(), comp);
         }
-        else if (m_batchMode == BatchMode::TextureSort || m_batchMode == BatchMode::LayerSort)
+        else if (m_batchMode == Mode::LayerSort)
         {
-            std::vector<std::size_t> indices(m_triangles.size());
-
-            std::iota(indices.begin(), indices.end(), 0);
-
-            if (m_batchMode == BatchMode::TextureSort)
+            const auto comp = [this](const std::size_t a, const std::size_t b)
             {
-                const auto comp = [this](const std::size_t a, const std::size_t b)
-                { return m_triangles[a].texture < m_triangles[b].texture; };
+                if (m_triangles[a].level != m_triangles[b].level)
+                    return m_triangles[a].level < m_triangles[b].level;
+                else
+                    return m_triangles[a].texture < m_triangles[b].texture;
+            };
 
-                std::stable_sort(indices.begin(), indices.end(), comp);
-            }
-            else
+            std::stable_sort(m_order.begin(), m_order.end(), comp);
+        }
+
+        if (!m_span || m_span->size() < m_unsortedVertices.size())
+        {
+            if (m_span)
+                m_pool.Return(*m_span);
+
+            m_span.emplace(m_pool.Rent(m_unsortedVertices.size()));
+        }
+
+        for (std::size_t i = 0; i < m_order.size(); i++)
+        {
+            const std::size_t newPos = i * 3;
+            const std::size_t oldPos = m_order[i] * 3;
+            (*m_span)[newPos]     = m_unsortedVertices[oldPos];
+            (*m_span)[newPos + 1] = m_unsortedVertices[oldPos + 1];
+            (*m_span)[newPos + 2] = m_unsortedVertices[oldPos + 2];
+        }
+
+        std::size_t startIndex = 0;
+        const sf::Texture* lastTexture = m_order.empty() ? nullptr : m_triangles[m_order[0]].texture;
+
+        for (std::size_t i = 1; i < m_order.size(); i++)
+        {
+            if (const sf::Texture* nextTexture = m_triangles[m_order[i]].texture; nextTexture != lastTexture)
             {
-                const auto comp = [this](const std::size_t a, const std::size_t b)
-                {
-                    if (m_triangles[a].level != m_triangles[b].level)
-                        return m_triangles[a].level < m_triangles[b].level;
-                    else
-                        return m_triangles[a].texture < m_triangles[b].texture;
-                };
-
-                std::stable_sort(indices.begin(), indices.end(), comp);
+                m_batches.emplace_back(lastTexture, (i - startIndex) * 3);
+                lastTexture = nextTexture;
+                startIndex  = i;
             }
+        }
 
-            // Create the array of sorted vertices
-            // We need them sorted so that we feed chunks to RenderTarget
-            m_vertices.resize(m_unsortedVertices.size());
+        if (startIndex != m_order.size())
+            m_batches.emplace_back(lastTexture, (m_order.size() - startIndex) * 3);
+    }
 
-            for (std::size_t i = 0; i < indices.size(); i++)
-            {
-                const std::size_t newPos = i * 3;
-                const std::size_t oldPos = indices[i] * 3;
-                m_vertices[newPos]       = m_unsortedVertices[oldPos];
-                m_vertices[newPos + 1]   = m_unsortedVertices[oldPos + 1];
-                m_vertices[newPos + 2]   = m_unsortedVertices[oldPos + 2];
-            }
+    ////////////////////////////////////////////////////////////
+    void SpriteBatch::RewriteVertices() const
+    {
+        for (std::size_t i = 0; i < m_order.size(); i++)
+        {
+            const std::size_t oldPos = m_order[i] * 3;
+            const std::size_t newPos = i * 3;
+            if (std::memcmp(&m_unsortedVertices[oldPos], m_span->data() + newPos, sizeof(sf::Vertex) * 3) == 0)
+                continue;
 
-            // Generate batches
-            std::size_t    startIndex  = 0;
-            std::size_t    nextIndex   = 0;
-            const sf::Texture* lastTexture = nullptr;
-
-            while (nextIndex < m_triangles.size())
-            {
-                const sf::Texture* nextTexture = m_triangles[indices[nextIndex]].texture;
-
-                if (nextTexture != lastTexture)
-                {
-                    m_batches.emplace_back(lastTexture, (nextIndex - startIndex) * 3);
-                    lastTexture = nextTexture;
-                    startIndex  = nextIndex;
-                }
-
-                nextIndex++;
-            }
-
-            // Deal with leftovers
-            if (startIndex != m_triangles.size())
-                m_batches.emplace_back(m_triangles[indices[startIndex]].texture, (m_triangles.size() - startIndex) * 3);
+            (*m_span)[newPos]     = m_unsortedVertices[oldPos];
+            (*m_span)[newPos + 1] = m_unsortedVertices[oldPos + 1];
+            (*m_span)[newPos + 2] = m_unsortedVertices[oldPos + 2];
         }
     }
 
+    ////////////////////////////////////////////////////////////
+    void SpriteBatch::Flush()
+    {
+        std::swap(m_flushedTriangles, m_triangles);
+
+        m_triangles.clear();
+        m_unsortedVertices.clear();
+    }
 
     ////////////////////////////////////////////////////////////
-    void SpriteBatch::ClearBatch(const bool force)
+    void SpriteBatch::ClearBatch()
     {
-        if (!force && !m_clearRequired)
-            return;
-
         m_unsortedVertices.clear();
         m_triangles.clear();
-        m_vertices.clear();
+        m_flushedTriangles.clear();
+        m_order.clear();
         m_batches.clear();
 
-        m_updateRequired = false;
+        m_rebuildRequired = true;
     }
 
 } // namespace Gx

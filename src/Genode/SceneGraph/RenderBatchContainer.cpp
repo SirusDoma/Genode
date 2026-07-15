@@ -2,9 +2,24 @@
 
 namespace Gx
 {
-    void RenderBatchContainer::SetBatchMode(const SpriteBatch::BatchMode batchMode) const
+    void RenderBatchContainer::SetBatchMode(const SpriteBatch::Mode batchMode) const
     {
         m_batcher.SetBatchMode(batchMode);
+    }
+
+    void RenderBatchContainer::SetBatchUsage(const SpriteBatch::Usage batchUsage) const
+    {
+        m_batcher.SetBatchUsage(batchUsage);
+    }
+
+    SpriteBatch::Usage RenderBatchContainer::GetBatchUsage() const
+    {
+        return m_batcher.GetBatchUsage();
+    }
+
+    VertexPool& RenderBatchContainer::GetVertexPool() const
+    {
+        return m_batcher.GetVertexPool();
     }
 
     void RenderBatchContainer::Update(const sf::Time& delta)

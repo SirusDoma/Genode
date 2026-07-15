@@ -17,11 +17,13 @@ namespace Gx
         template <typename R>
         using ResourceInstantiator = std::function<std::unique_ptr<R>(const ResourceContext&)>;
 
+        using Builder = std::function<std::unique_ptr<ResourceLoader>()>;
+
         ResourceLoader() = default;
         virtual ~ResourceLoader() = default;
 
         template<typename U>
-        static void OnRegistered(const U&) { }
+        static void OnRegistered(const U&, const Builder&) { }
 
         template<typename U>
         static void OnRemoved(const U&) { }

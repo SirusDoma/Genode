@@ -30,6 +30,7 @@
 
 #include <Genode/Entities/Renderable.hpp>
 #include <Genode/Graphics/RenderStates.hpp>
+#include <Genode/Graphics/VertexPool.hpp>
 #include <Genode/SceneGraph/Node.hpp>
 #include <Genode/SceneGraph/RenderableContainer.hpp>
 #include <Genode/SceneGraph/UpdatableContainer.hpp>
@@ -44,31 +45,31 @@ namespace Gx
 {
 
     ////////////////////////////////////////////////////////////
-    /// \brief Batching utility for drawables, meant for increasing
+    /// @brief Batching utility for drawables, meant for increasing
     ///        rendering performance
     ///
     ////////////////////////////////////////////////////////////
     class SpriteBatch : public virtual Node, public virtual RenderableContainer, public virtual UpdatableContainer, public RenderSurface
     {
     public:
-        enum class BatchMode
+        enum class Mode
         {
             ////////////////////////////////////////////////////////////
-            /// \brief Creates a batch for each contiguous groups of drawables
+            /// @brief Creates a batch for each contiguous groups of drawables
             ///        that use the same texture.
             ///
             ////////////////////////////////////////////////////////////
             Deferred,
 
             ////////////////////////////////////////////////////////////
-            /// \brief Organizes objects into a single layer, then reorders
+            /// @brief Organizes objects into a single layer, then reorders
             ///        them by texture before drawing.
             ///
             ////////////////////////////////////////////////////////////
             TextureSort,
 
             ////////////////////////////////////////////////////////////
-            /// \brief Organizes objects into multiple layers. Groups objects
+            /// @brief Organizes objects into multiple layers. Groups objects
             ///        into layers based on level, then reorders objects in
             ///        each layer by texture before drawing the layers from
             ///        closest to furthest.
@@ -77,27 +78,73 @@ namespace Gx
             LayerSort,
         };
 
+        enum class Usage
+        {
+            ////////////////////////////////////////////////////////////
+            /// @brief Rebuilds the batch from scratch on every flush.
+            ///
+            ////////////////////////////////////////////////////////////
+            Stream,
+
+            ////////////////////////////////////////////////////////////
+            /// @brief Locks the batch in on flush and diffs subsequent
+            ///        submissions against it, rewriting only vertices
+            ///        that changed and re-sorting only when the batch
+            ///        structure changes.
+            ///
+            ////////////////////////////////////////////////////////////
+            Dynamic,
+        };
+
         SpriteBatch() = default;
-        explicit SpriteBatch(BatchMode batchMode);
+        explicit SpriteBatch(Mode batchMode);
+        SpriteBatch(Mode batchMode, Usage batchUsage);
+
+        SpriteBatch(const SpriteBatch& other);
+        SpriteBatch& operator=(const SpriteBatch& other);
 
         ////////////////////////////////////////////////////////////
-        /// \brief Sets the batch mode to use
+        /// @brief Sets the batch mode to use
         ///
-        /// \param batchMode The new batch mode to use
+        /// @param batchMode The new batch mode to use
         ///
         ////////////////////////////////////////////////////////////
-        void SetBatchMode(BatchMode batchMode);
+        void SetBatchMode(Mode batchMode);
 
         ////////////////////////////////////////////////////////////
-        /// \brief Batches an array of vertices
+        /// @brief Sets the batch usage to use
         ///
-        /// \param vertices  The array of vertices to be batched
-        /// \param count     How many vertices to batch
-        /// \param type      The primitive formed by the vertices.
+        /// @param batchUsage The new batch usage to use
+        ///
+        ////////////////////////////////////////////////////////////
+        void SetBatchUsage(Usage batchUsage);
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Gets the current batch usage
+        ///
+        /// @return The current batch usage
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] Usage GetBatchUsage() const;
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Gets the vertex pool that holds the vertices to render
+        ///
+        /// @return Reference to the vertex pool of the batch
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] VertexPool& GetVertexPool();
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Batches an array of vertices
+        ///
+        /// @param vertices  The array of vertices to be batched
+        /// @param count     How many vertices to batch
+        /// @param type      The primitive formed by the vertices.
         ///                  Only triangle primitives are supported
-        /// \param texture   The texture to use for rendering
-        /// \param transform The transform to apply on the vertices
-        /// \param layer     The layer at which the drawable will be
+        /// @param texture   The texture to use for rendering
+        /// @param transform The transform to apply on the vertices
+        /// @param layer     The layer at which the drawable will be
         ///                  renderered. This value is used only when
         ///                  BatchMode::LayerSort mode is used.
         ///
@@ -117,10 +164,10 @@ namespace Gx
         void Update(const sf::Time& delta) override;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Renders the batch to the render target
+        /// @brief Renders the batch to the render target
         ///
-        /// \param surface The RenderTarget to draw to
-        /// \param states The RenderStates to use. The texture is ignored
+        /// @param surface The RenderTarget to draw to
+        /// @param states The RenderStates to use. The texture is ignored
         ///
         ////////////////////////////////////////////////////////////
         RenderStates Render(RenderSurface& surface, RenderStates states) const override;
@@ -147,22 +194,22 @@ namespace Gx
         void SetView(const sf::View& view) override;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Clears the batch, removing all drawables that were
+        /// @brief Clears the batch, removing all drawables that were
         ///        added
         ///
         ////////////////////////////////////////////////////////////
-        void ClearBatch(bool force = false);
+        void ClearBatch();
 
     private:
         ////////////////////////////////////////////////////////////
-        /// \brief Pushes a triangle into internal storage
+        /// @brief Pushes a triangle into internal storage
         ///
-        /// \param a         First vertex
-        /// \param b         Second vertex
-        /// \param c         Third vertex
-        /// \param transform Transform to apply before inserting
-        /// \param texture   Texture to apply to triangle
-        /// \param level     The level to use for level sorting
+        /// @param a         First vertex
+        /// @param b         Second vertex
+        /// @param c         Third vertex
+        /// @param transform Transform to apply before inserting
+        /// @param texture   Texture to apply to triangle
+        /// @param level     The level to use for level sorting
         ///
         ////////////////////////////////////////////////////////////
         void PushTriangle(const sf::Vertex&    a,
@@ -172,15 +219,14 @@ namespace Gx
                           const sf::Texture*   texture,
                           float                level);
 
-        ////////////////////////////////////////////////////////////
-        /// \brief Updates the batch, preparing its internal state for
-        ///        efficient usage
-        ///
-        ////////////////////////////////////////////////////////////
-        void UpdateBatch(bool force = false) const;
+        [[nodiscard]] bool IsStructureChanged() const;
+
+        void RebuildBatch() const;
+        void RewriteVertices() const;
+        void Flush();
 
         ////////////////////////////////////////////////////////////
-        /// \brief Holds information about a batched triangle
+        /// @brief Holds information about a batched triangle
         ///
         ////////////////////////////////////////////////////////////
         struct TriangleInfo
@@ -193,7 +239,7 @@ namespace Gx
         };
 
         ////////////////////////////////////////////////////////////
-        /// \brief Holds information for rendering a batch
+        /// @brief Holds information for rendering a batch
         ///
         ////////////////////////////////////////////////////////////
         struct BatchInfo
@@ -213,23 +259,29 @@ namespace Gx
         // Member data
         ////////////////////////////////////////////////////////////
         // Batched Triangles
-        std::vector<TriangleInfo>       m_triangles;        //!< Info about batched triangles
-        std::vector<sf::Vertex>         m_unsortedVertices; //!< Vertices currently batched
-        mutable std::vector<BatchInfo>  m_batches;          //!< Prepared batch information, ready for rendering
-        mutable std::vector<sf::Vertex> m_vertices;         //!< Prepared vertices, ready for rendering
+        std::vector<TriangleInfo> m_triangles;        //!< Info about batched triangles
+        std::vector<sf::Vertex>   m_unsortedVertices; //!< Vertices currently batched
+        std::vector<TriangleInfo> m_flushedTriangles; //!< Info about triangles locked in at the last flush
+
+        mutable std::vector<BatchInfo>    m_batches; //!< Prepared batch information, ready for rendering
+        mutable std::vector<std::size_t>  m_order;   //!< Triangle permutation of the last rebuild
+        mutable std::optional<VertexSpan> m_span;    //!< Prepared vertices, ready for rendering
+
+        // Vertex Storage
+        mutable VertexPool m_pool; //!< The pool that holds the prepared vertices
 
         // Batch Settings
-        BatchMode                    m_batchMode{BatchMode::Deferred}; //!< The current batch strategy
-        std::optional<sf::BlendMode> m_blendMode{};                    //!< The blending mode for rendering
-        mutable bool                 m_updateRequired{true};           //!< If true, batch must be sorted before rendering
-        mutable bool                 m_clearRequired{false};
+        Mode                         m_batchMode{Mode::Deferred};  //!< The current batch strategy
+        Usage                        m_batchUsage{Usage::Dynamic};  //!< The current batch usage
+        std::optional<sf::BlendMode> m_blendMode{};                //!< The blending mode for rendering
+        mutable bool                 m_rebuildRequired{true};      //!< If true, batch must be rebuilt before rendering
     };
 
 } // namespace Gx
 
 ////////////////////////////////////////////////////////////
-/// \class Gx::SpriteBatch
-/// \ingroup graphics
+/// @class Gx::SpriteBatch
+/// @ingroup graphics
 ///
 /// sf::SpriteBatch is a batching utility for drawables. It
 /// increases rendering performance by reordering and combining
@@ -240,7 +292,7 @@ namespace Gx
 /// comes with its benefits and drawbacks, so the optimal choice
 /// depends on your specific needs.
 ///
-/// \c sf::BatchMode::Deferred is best used when rendering contiguous
+/// @c sf::BatchMode::Deferred is best used when rendering contiguous
 /// groups of drawables that use the same texture. This mode creates
 /// batches for each such group, improving performance when many
 /// drawables with few vertices are drawn (such as hundreds to
@@ -249,7 +301,7 @@ namespace Gx
 /// were batched in. This is similar how rendering works with
 /// sf::RenderTarget.
 ///
-/// \c sf::BatchMode::TextureSort is best used when drawing objects
+/// @c sf::BatchMode::TextureSort is best used when drawing objects
 /// that are positioned on a "layer", and do not overlap each other.
 /// This mode assumes that the draw order is not important within
 /// a layer, and sorts all objects by texture before batching them.
@@ -259,11 +311,11 @@ namespace Gx
 /// Care should be taken when drawing overlapping objects, since
 /// it is not guaranteed that they will be ordered correctly.
 ///
-/// \c sf::BatchMode::LayerSort is best used when drawing objects
+/// @c sf::BatchMode::LayerSort is best used when drawing objects
 /// that are positioned on multiple "layers" based on level, and objects
 /// within a layer do not overlap each other.
 /// Within each layer, objects are sorted by texture before drawing,
-/// similar to \c TextureSort. However, objects in a layer with a
+/// similar to @c TextureSort. However, objects in a layer with a
 /// lower "level" value will be drawn behind objects with a higher
 /// "level" value.
 /// You can also use this mode to render objects in an order that is
