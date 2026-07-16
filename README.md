@@ -7,19 +7,74 @@ It began with the idea that it would only evolve or change to satisfy the *deman
 
 After successfully developed my game with this framework, I've decided to put this into an open source repository.
 
-> [!Important]
-> #### Subject to change
-> The framework was not built to be used for general use-cases. As such, the API and designs are subject to change.  
-> Consider to open an issue and/or raise a pull request if you're interested to shape this framework better!
->
-> #### Inheritance over Composition
-> The framework currently employs an _Inheritance over Composition_ design.
-> Certain modules such as `SceneGraph` are heavily rely on virtual inheritance which may (or may not) introduce performance overhead particularly when dealing with millions of complex node objects.
->
-> Alternatively, you can roll out your own [ECS solution](https://en.wikipedia.org/wiki/Entity_component_system) and use lower-level abstraction classes to partially utilize the `SceneGraph` module, thereby still gaining the benefits of _Composition over Inheritance_.
-> See [_Design Goals_](#design-goals) below for more details.
->
-> This design may be changed in the future.
+# Integration
+This framework can be either added into the game source tree directly as an additional CMake target or built and included separately.
+
+## Repository Structure ##
+
+| Directory | Contents                                                                                                                     |
+|-----------|------------------------------------------------------------------------------------------------------------------------------|
+| bin       | Final build compilation output, categorized by OS and build config (e.g: `bin/windows/Debug/`). Does not include any assets. |
+| build     | CMake build directory and object files that generated during compilation.                                                    |
+| extlibs   | External libraries                                                                                                           |
+| include   | Headers directory                                                                                                            |
+| src       | Source code directory                                                                                                        |
+
+## Adding as a CMake target
+Place the Genode source tree inside your project (e.g., as a git submodule) and add it to your `CMakeLists.txt`:
+
+```cmake
+add_subdirectory(modules/Genode)
+
+target_link_libraries(MyGame PRIVATE Genode)
+```
+
+Alternatively, let CMake download Genode for you via [`FetchContent`](https://cmake.org/cmake/help/latest/module/FetchContent.html):
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    Genode
+    GIT_REPOSITORY https://github.com/SirusDoma/Genode.git
+    GIT_TAG        master # or pin a specific commit
+)
+FetchContent_MakeAvailable(Genode)
+
+target_link_libraries(MyGame PRIVATE Genode)
+```
+
+Linking the `Genode` target is all that is required: the include directories and the dependencies propagate to the consuming target automatically.
+
+## Compiling the project
+To build the library separately instead, use a standard CMake build and include the headers inside [`include`](/include) directory to your game project:
+
+```shell
+cmake -B ./build -DCMAKE_BUILD_TYPE=Release
+cmake --build ./build --config Release
+```
+
+> [!Note]
+> Set `OUTPUT_DIR` flag in your cmake to override the compilation output location.
+> See [Configuring your SFML build](https://www.sfml-dev.org/tutorials/3.1/getting-started/build-from-source/#configuring-your-sfml-build) for more options to configure the SFML build used by Genode.
+
+You can find the compilation output in [`bin`](/bin) folder which you can use to link against your project.
+
+The project is fully relies on [CMake](https://cmake.org/), and it makes use of [`FetchContent`](https://cmake.org/cmake/help/latest/module/FetchContent.html) to manage the dependencies.  
+No additional setup or commands are required to build the project other than standard cmake build.
+
+List of dependencies:
+- [SFML](https://github.com/SFML/SFML)
+- [freetype2](https://freetype.org/)
+- [HarfBuzz](https://github.com/harfbuzz/harfbuzz)
+- [SheenBidi](https://github.com/Tehreer/SheenBidi)
+- [fmt](https://github.com/fmtlib/fmt)
+- [nlohmann_json](https://github.com/nlohmann/json)
+- [Boost.PFR](https://github.com/boostorg/pfr)
+
+# Documentation
+
+Please refer to the [wiki](https://github.com/SirusDoma/Genode/wiki) for the Documentation.
 
 # Design Goals
 There are myriads of 2D Game Framework out there, and each have its reasons and goals to exist. This framework had these design goals:
@@ -45,46 +100,6 @@ This framework is designed so that lower-level and higher-level abstractions can
 This framework was initially designed by a single developer in a limited scope, and thus conveniences are priortized over performance and efficiencies. It is still important aspect to certain degree, after all, the game that was built with this framework is a rhythm game that has hundreds moving objects at a time and require smooth framerate and high timing precision.
 
 That being said, there are certainly faster 2D game frameworks/engines out there that are faster and more capable in handling bigger scope in more sophisticated/intuitive/elegant way. However, the goal is to speed up my game development process. If you find yourself in a similar situation, consider give Genode a try.
-
-# Integration
-This framework can be either added into the game source tree directly as an additional CMake target or built and included separately.
-
-## Repository Structure ##
-
-| Directory | Contents                                                                                                                     |
-|-----------|------------------------------------------------------------------------------------------------------------------------------|
-| bin       | Final build compilation output, categorized by OS and build config (e.g: `bin/windows/Debug/`). Does not include any assets. |
-| build     | CMake build directory and object files that generated during compilation.                                                    |
-| extlibs   | External libraries                                                                                                           |
-| include   | Headers directory                                                                                                            |
-| src       | Source code directory                                                                                                        |
-
-## Compiling the project
-Use CMake to build the library and include the headers inside [`include`](/include) directory to your game project.
-
-```shell
-cmake -B ./build -DCMAKE_BUILD_TYPE=Release
-cmake --build ./build --config Release
-```
-
-> [!Note]
-> Set `OUTPUT_DIR` flag in your cmake to override the compilation output location.
-> See [Configuring your SFML build](https://www.sfml-dev.org/tutorials/3.1/getting-started/build-from-source/#configuring-your-sfml-build) for more options to configure the SFML build used by Genode.
-
-You can find the compilation output in [`bin`](/bin) folder which you can use to link against your project.
-
-The project is fully relies on [CMake](https://cmake.org/), and it makes use of [`FetchContent`](https://cmake.org/cmake/help/latest/module/FetchContent.html) to manage the dependencies.  
-No additional setup or commands are required to build the project other than standard cmake build.
-
-List of dependencies:
-- [SFML](https://github.com/SFML/SFML)
-- [freetype2](https://freetype.org/)
-- [fmt](https://github.com/fmtlib/fmt)
-- [nlohmann_json](https://github.com/nlohmann/json)
-
-# Documentation
-
-Please refer to the [wiki](https://github.com/SirusDoma/Genode/wiki) for the Documentation.
 
 # License
 
