@@ -91,21 +91,21 @@ FetchContent_MakeAvailable(pfr)
 
 # Application includes
 target_include_directories(${LIBRARY_NAME} PRIVATE src)
-target_include_directories(${LIBRARY_NAME} PRIVATE include)
+target_include_directories(${LIBRARY_NAME} PUBLIC include)
 target_include_directories(${LIBRARY_NAME} PRIVATE extlibs/headers)
 
 # Link SFML
-target_link_libraries(${LIBRARY_NAME} PRIVATE SFML::Audio SFML::Graphics SFML::System SFML::Window SFML::Network)
+target_link_libraries(${LIBRARY_NAME} PUBLIC SFML::Audio SFML::Graphics SFML::System SFML::Window SFML::Network)
 
 # Link FreeType, SheenBidi and HarfBuzz
-target_link_libraries(${LIBRARY_NAME} PRIVATE Freetype::Freetype SheenBidi::SheenBidi HarfBuzz::HarfBuzz)
+target_link_libraries(${LIBRARY_NAME} PUBLIC Freetype::Freetype SheenBidi::SheenBidi HarfBuzz::HarfBuzz)
 
 # Link JSON
-target_link_libraries(${LIBRARY_NAME} PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(${LIBRARY_NAME} PUBLIC nlohmann_json::nlohmann_json)
 
 # Link fmt
-target_link_libraries(${LIBRARY_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${LIBRARY_NAME} PUBLIC fmt::fmt)
 
 # Link Boost PFR
-target_link_libraries(${LIBRARY_NAME} PRIVATE Boost::pfr)
+target_link_libraries(${LIBRARY_NAME} PUBLIC Boost::pfr)
 
