@@ -78,12 +78,6 @@ namespace Gx
             return *svc->Instance;
         }
 
-        if (m_parent)
-        {
-            if (auto* ptr = m_parent->Require<Type*>())
-                return *ptr;
-        }
-
         if constexpr (IsConstructible<Type>)
         {
             ProvideDefault<Type>(key);
@@ -110,6 +104,7 @@ namespace Gx
             {
                 if (m_current)
                     m_current->Dependencies.push_back(m_entries[key]);
+
                 return svc->Instance.get();
             }
 
@@ -124,9 +119,6 @@ namespace Gx
             return svc->Instance.get();
         }
 
-        if (m_parent)
-            return m_parent->Require<T>();
-
         return nullptr;
     }
 
@@ -138,12 +130,6 @@ namespace Gx
 
         if (auto* svc = GetService<Type>(key))
             return svc->Builder(*this);
-
-        if (m_parent)
-        {
-            if (auto* ptr = m_parent->Require<Type*>())
-                return m_parent->Instantiate<T>();
-        }
 
         if constexpr (IsConstructible<Type>)
         {
@@ -188,10 +174,19 @@ namespace Gx
     }
 
     template <typename T>
-    Context::Service<T>* Context::GetService(std::type_index key) const
+    Context::Service<T>* Context::GetService(const std::type_index key) const
     {
         if (const auto it = m_entries.find(key); it != m_entries.end())
             return static_cast<Service<T>*>(it->second.get());
+
+        if (m_parent)
+        {
+            if (auto* svc = m_parent->GetService<T>(key); svc && svc->Lifetime == Scope::Singleton)
+            {
+                m_entries[key] = m_parent->m_entries[key];
+                return svc;
+            }
+        }
 
         return nullptr;
     }
