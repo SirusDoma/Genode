@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Genode/IO/FileSystem/FileSystemController.hpp>
+#include <Genode/IO/FileSystemController.hpp>
 
 #include <Genode/System/Exception.hpp>
 

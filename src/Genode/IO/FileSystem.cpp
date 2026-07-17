@@ -1,9 +1,9 @@
 #include <algorithm>
-#include <Genode/IO/FileSystem/FileSystem.hpp>
+#include <Genode/IO/FileSystem.hpp>
 
 #include <Genode/IO/IOException.hpp>
-#include <Genode/IO/FileSystem/FileSystemController.hpp>
-#include <Genode/IO/FileSystem/LocalFileSystem.hpp>
+#include <Genode/IO/FileSystemController.hpp>
+#include <Genode/IO/LocalFileSystem.hpp>
 
 namespace
 {

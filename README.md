@@ -65,12 +65,12 @@ No additional setup or commands are required to build the project other than sta
 
 List of dependencies:
 - [SFML](https://github.com/SFML/SFML)
+- [Boost.PFR](https://github.com/boostorg/pfr)
 - [freetype2](https://freetype.org/)
 - [HarfBuzz](https://github.com/harfbuzz/harfbuzz)
 - [SheenBidi](https://github.com/Tehreer/SheenBidi)
 - [fmt](https://github.com/fmtlib/fmt)
 - [nlohmann_json](https://github.com/nlohmann/json)
-- [Boost.PFR](https://github.com/boostorg/pfr)
 
 # Documentation
 

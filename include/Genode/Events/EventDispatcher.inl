@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Genode/System/EventDispatcher.hpp>
+#include <Genode/Events/EventDispatcher.hpp>
 
 #include <utility>
 
-namespace Gx
+namespace Gx::Events
 {
     ////////////////////////////////////////////////////////////
     template <typename TKey, typename... TArgs>

@@ -1,6 +1,6 @@
 ﻿#include <Genode/IO/Archive.hpp>
 #include <Genode/IO/IOException.hpp>
-#include <Genode/IO/FileSystem/FileInfo.hpp>
+#include <Genode/IO/FileInfo.hpp>
 #include <Genode/Utilities/StringHelper.hpp>
 
 namespace Gx

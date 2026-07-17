@@ -16,8 +16,16 @@ namespace Gx
             template<class T = int>
             [[nodiscard]] T Next(T min = 0, T max = std::numeric_limits<T>::max())
             {
-                auto randomizer = std::uniform_real_distribution<T>(min, max);
-                return static_cast<T>(randomizer(m_seeder));
+                if constexpr (std::is_floating_point_v<T>)
+                {
+                    auto randomizer    = std::uniform_real_distribution<T>(min, max);
+                    return static_cast<T>(randomizer(m_seeder));
+                }
+                else
+                {
+                    auto randomizer    = std::uniform_int_distribution<T>(min, max);
+                    return static_cast<T>(randomizer(m_seeder));
+                }
             }
 
             template<class T = int>

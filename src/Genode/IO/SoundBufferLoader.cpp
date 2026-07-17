@@ -1,5 +1,5 @@
 ﻿#include <Genode/IO/Loaders/SoundBufferLoader.hpp>
-#include <Genode/IO/FileSystem/LocalFileSystem.hpp>
+#include <Genode/IO/LocalFileSystem.hpp>
 
 namespace Gx
 {

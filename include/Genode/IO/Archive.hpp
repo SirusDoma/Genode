@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Genode/IO/Resource.hpp>
-#include <Genode/IO/FileSystem/FileSystemController.hpp>
+#include <Genode/IO/FileSystemController.hpp>
 
 #include <memory>
 #include <string>

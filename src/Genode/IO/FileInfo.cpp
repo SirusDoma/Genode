@@ -1,6 +1,6 @@
-#include <Genode/IO/FileSystem/FileInfo.hpp>
+#include <Genode/IO/FileInfo.hpp>
 
-#include <Genode/IO/FileSystem/FileSystemController.hpp>
+#include <Genode/IO/FileSystemController.hpp>
 #include <utility>
 
 namespace Gx

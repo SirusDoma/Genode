@@ -26,7 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include <Genode/Graphics/Font.hpp>
-#include <Genode/IO/FileSystem/LocalFileSystem.hpp>
+#include <Genode/IO/LocalFileSystem.hpp>
 
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Image.hpp>

@@ -1,4 +1,4 @@
-#include <Genode/IO/FileSystem/FileSystemController.hpp>
+#include <Genode/IO/FileSystemController.hpp>
 
 namespace Gx
 {

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <Genode/System/Events/EventHandler.hpp>
-#include <Genode/System/Events/Registration.hpp>
+#include <Genode/Events/EventHandler.hpp>
+#include <Genode/Events/Registration.hpp>
 
 #include <functional>
 #include <tuple>
 #include <type_traits>
 
-namespace Gx
+namespace Gx::Events
 {
     class EventDispatcher;
 
@@ -154,7 +154,7 @@ namespace Gx
     /// handler takes them, they are canonicalized to the stored
     /// types:
     /// @code
-    /// Gx::Subscriber<const char*, const std::string&, int> m_subscriber;
+    /// Gx::Events::Subscriber<const char*, const std::string&, int> m_subscriber;
     ///
     /// m_subscriber = dispatcher.On("key", [](const std::string& text, int value) { ... });
     /// @endcode

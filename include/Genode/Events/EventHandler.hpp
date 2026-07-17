@@ -6,7 +6,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace Gx
+namespace Gx::Events
 {
     ////////////////////////////////////////////////////////////
     /// @brief Represents the function that handles events dispatched with @a `TArgs` arguments

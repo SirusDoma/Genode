@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Genode/System/Events/EventHandler.hpp>
-#include <Genode/System/Events/Registration.hpp>
-#include <Genode/System/Events/Subscriber.hpp>
+#include <Genode/Events/EventHandler.hpp>
+#include <Genode/Events/Registration.hpp>
+#include <Genode/Events/Subscriber.hpp>
 
 #include <functional>
 #include <mutex>
@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace Gx
+namespace Gx::Events
 {
     ////////////////////////////////////////////////////////////
     /// @brief Provides a keyed event dispatching mechanism
@@ -192,4 +192,4 @@ namespace Gx
     };
 }
 
-#include <Genode/System/EventDispatcher.inl>
+#include <Genode/Events/EventDispatcher.inl>

@@ -7,6 +7,7 @@
 #include <Genode/SceneGraph.hpp>
 #include <Genode/Tasks.hpp>
 #include <Genode/Tween.hpp>
+#include <Genode/Events.hpp>
 #include <Genode/System.hpp>
 #include <Genode/Network.hpp>
 #include <Genode/IO.hpp>

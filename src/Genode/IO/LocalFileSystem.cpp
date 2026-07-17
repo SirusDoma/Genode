@@ -1,8 +1,8 @@
-﻿#include <Genode/IO/FileSystem/LocalFileSystem.hpp>
+﻿#include <Genode/IO/LocalFileSystem.hpp>
 
 #include <SFML/System/FileInputStream.hpp>
 
-#include <Genode/IO/FileSystem/FileInfo.hpp>
+#include <Genode/IO/FileInfo.hpp>
 #include <Genode/Utilities/StringHelper.hpp>
 
 #include <unordered_set>

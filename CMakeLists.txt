@@ -22,6 +22,15 @@ file(GLOB_RECURSE HEADERS include/*.hpp)
 file(GLOB_RECURSE HEADERS extlibs/headers/*.hpp)
 file(GLOB_RECURSE HEADERS extlibs/headers/*.h)
 
+# Platform-specific sources
+if(WIN32)
+    list(FILTER SRCS EXCLUDE REGEX "/(Unix|macOS)/")
+elseif(APPLE)
+    list(FILTER SRCS EXCLUDE REGEX "/(Win32)/")
+else()
+    list(FILTER SRCS EXCLUDE REGEX "/(Win32|macOS)/")
+endif()
+
 # Library
 add_library(${LIBRARY_NAME} STATIC ${SRCS} ${HEADERS})
 
@@ -56,6 +65,13 @@ elseif(APPLE)
 else()
     # Libraries
     target_link_libraries(${LIBRARY_NAME} PRIVATE stdc++fs)
+
+    # Fontconfig for font discovery on Linux
+    find_package(Fontconfig QUIET)
+    if (Fontconfig_FOUND)
+        target_link_libraries(${LIBRARY_NAME} PRIVATE Fontconfig::Fontconfig)
+        target_compile_definitions(${LIBRARY_NAME} PRIVATE USE_FONTCONFIG)
+    endif()
 endif()
 
 # -- SFML

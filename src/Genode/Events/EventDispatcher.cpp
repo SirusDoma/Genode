@@ -1,8 +1,8 @@
-#include <Genode/System/EventDispatcher.hpp>
+#include <Genode/Events/EventDispatcher.hpp>
 
 #include <algorithm>
 
-namespace Gx
+namespace Gx::Events
 {
     ////////////////////////////////////////////////////////////
     EventDispatcher::~EventDispatcher()

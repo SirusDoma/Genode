@@ -1,5 +1,5 @@
 ﻿#include <Genode/IO/Loaders/FontLoader.hpp>
-#include <Genode/IO/FileSystem/LocalFileSystem.hpp>
+#include <Genode/IO/LocalFileSystem.hpp>
 
 #include <Genode/Graphics/Font.hpp>
 
