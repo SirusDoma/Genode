@@ -3,6 +3,8 @@
 #include <Genode/Events/EventHandler.hpp>
 #include <Genode/Events/Registration.hpp>
 #include <Genode/Events/Subscriber.hpp>
+#include <Genode/Entities/Updatable.hpp>
+#include <Genode/System/Module.hpp>
 
 #include <functional>
 #include <mutex>
@@ -25,7 +27,7 @@ namespace Gx::Events
     ///
     /// @see `Subscriber`
     ////////////////////////////////////////////////////////////
-    class EventDispatcher
+    class EventDispatcher : public Updatable, public Module
     {
     public:
         ////////////////////////////////////////////////////////////
@@ -36,7 +38,7 @@ namespace Gx::Events
         ////////////////////////////////////////////////////////////
         /// @brief Destroys the dispatcher, deactivating every subscriber still registered
         ////////////////////////////////////////////////////////////
-        virtual ~EventDispatcher();
+        ~EventDispatcher() override;
 
         EventDispatcher(const EventDispatcher&)            = delete;
         EventDispatcher& operator=(const EventDispatcher&) = delete;
@@ -121,6 +123,15 @@ namespace Gx::Events
         /// @see `Enqueue`
         ////////////////////////////////////////////////////////////
         virtual void DispatchQueue();
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Perform housekeeping routine for EventDispatcher
+        ///
+        /// This function will trigger `DispatchQueue`.
+        ///
+        /// @see `DispatchQueue`
+        ////////////////////////////////////////////////////////////
+        void Update(const sf::Time& delta) override;
 
     protected:
         ////////////////////////////////////////////////////////////

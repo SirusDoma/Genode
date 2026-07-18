@@ -98,4 +98,11 @@ namespace Gx::Events
         for (const auto& event : queue)
             event();
     }
+
+
+    ////////////////////////////////////////////////////////////
+    void EventDispatcher::Update(const sf::Time& delta)
+    {
+        DispatchQueue();
+    }
 }
