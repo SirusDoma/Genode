@@ -28,7 +28,8 @@ namespace Gx
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-        VertexSpan(VertexSpan&& other) noexcept = default;
+        VertexSpan(VertexSpan&& other) noexcept;
+        ~VertexSpan() override;
 
         [[nodiscard]] reference operator[](size_type idx);
         [[nodiscard]] const_reference operator[](size_type idx) const;
@@ -68,11 +69,12 @@ namespace Gx
     private:
         friend class VertexPool;
 
-        VertexSpan(VertexPool& pool, size_type offset, size_type size);
+        VertexSpan(VertexPool& pool, size_type offset, size_type size, bool scoped = false);
 
         VertexPool* m_pool = nullptr;
         size_type   m_offset = {};
         size_type   m_size   = {};
+        bool        m_scoped = false;
     };
 
     class VertexPool : public Poolable<VertexSpan>, public Renderable
@@ -84,6 +86,7 @@ namespace Gx
         explicit VertexPool(sf::PrimitiveType primitiveType, std::size_t capacity);
 
         [[nodiscard]] VertexSpan Rent(std::size_t size) override;
+        [[nodiscard]] VertexSpan Rent(std::size_t size, bool scoped);
         void Return(VertexSpan& span) override;
 
         [[nodiscard]] VertexSpan Transfer(const std::vector<sf::Vertex>& vertices);

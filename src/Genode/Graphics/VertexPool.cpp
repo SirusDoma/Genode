@@ -30,9 +30,14 @@ namespace Gx
 
     VertexSpan VertexPool::Rent(const std::size_t size)
     {
+        return Rent(size, false);
+    }
+
+    VertexSpan VertexPool::Rent(const std::size_t size, const bool scoped)
+    {
         if (size == 0)
         {
-            return { *this, 0, size };
+            return { *this, 0, size, scoped };
         }
 
         const auto segmentIdx = Scan(size);
@@ -42,7 +47,7 @@ namespace Gx
             m_vertices.resize(newOffset + size);
             m_segments.emplace_back(newOffset, size, true);
 
-            return { *this, newOffset, size };
+            return { *this, newOffset, size, scoped };
         }
 
         const auto offset = m_segments[*segmentIdx].m_offset;
@@ -60,7 +65,7 @@ namespace Gx
         if (m_vertices.size() < offset + size)
             m_vertices.resize(offset + size);
 
-        return { *this, offset, size };
+        return { *this, offset, size, scoped };
     }
 
     void VertexPool::Return(VertexSpan& span)
@@ -210,11 +215,28 @@ namespace Gx
 
 namespace Gx
 {
-    VertexSpan::VertexSpan(VertexPool& pool, const size_type offset, const size_type size) :
+    VertexSpan::VertexSpan(VertexPool& pool, const size_type offset, const size_type size, const bool scoped) :
         m_pool(&pool),
         m_offset(offset),
-        m_size(size)
+        m_size(size),
+        m_scoped(scoped)
     {
+    }
+
+    VertexSpan::VertexSpan(VertexSpan&& other) noexcept :
+        m_pool(other.m_pool),
+        m_offset(other.m_offset),
+        m_size(other.m_size),
+        m_scoped(other.m_scoped)
+    {
+        other.m_pool   = nullptr;
+        other.m_scoped = false;
+    }
+
+    VertexSpan::~VertexSpan()
+    {
+        if (m_scoped && m_pool)
+            m_pool->Return(*this);
     }
 
     VertexSpan& VertexSpan::operator=(VertexSpan&& other) noexcept
@@ -222,9 +244,16 @@ namespace Gx
         if (this == &other)
             return *this;
 
+        if (m_scoped && m_pool)
+            m_pool->Return(*this);
+
         m_pool   = other.m_pool;
         m_offset = other.m_offset;
         m_size   = other.m_size;
+        m_scoped = other.m_scoped;
+
+        other.m_pool   = nullptr;
+        other.m_scoped = false;
 
         return *this;
     }
