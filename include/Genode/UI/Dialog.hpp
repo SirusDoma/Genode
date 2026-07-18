@@ -58,7 +58,7 @@ namespace Gx
         [[nodiscard]] Button* GetCancelButton() const;
 
         void SetLabel(Label& label);
-        void SetPromptString(const std::string& prompt);
+        void SetPromptString(const sf::String& prompt);
         void SetAcceptButton(Button& acceptButton);
         void SetCancelButton(Button& cancelButton);
 

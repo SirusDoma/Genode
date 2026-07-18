@@ -89,7 +89,7 @@ namespace Gx
     }
 
     // ReSharper disable once CppMemberFunctionMayBeConst
-    void Dialog::SetPromptString(const std::string& prompt)
+    void Dialog::SetPromptString(const sf::String& prompt)
     {
         if (!m_promptLabel)
             return;
