@@ -1,5 +1,6 @@
 #include <Genode/Graphics/Font.hpp>
 #include <Genode/UI/InputField.hpp>
+#include <Genode/System/Platform.hpp>
 #include <Genode/Utilities/StringHelper.hpp>
 
 #include <SFML/Window/Clipboard.hpp>
@@ -565,9 +566,8 @@ namespace Gx
             return;
 
         bool control = ev.control;
-#ifdef __APPLE__
-        control = ev.system;
-#endif
+        if (GetCurrentPlatform() == Platform::macOS)
+            control = ev.system;
 
         if (ev.code == sf::Keyboard::Key::Backspace || (ev.code == sf::Keyboard::Key::Delete && m_caret.SelectionLength != 0))
         {
@@ -702,6 +702,12 @@ namespace Gx
                 }
                 else if (ev.code == sf::Keyboard::Key::V)
                 {
+                    if (m_caret.SelectionLength != 0)
+                    {
+                        m_caret.Index = static_cast<int>(Erase(m_caret.Index - 1, m_caret.SelectionLength));
+                        m_caret.SelectionLength = 0;
+                    }
+
                     auto string = sf::Clipboard::getString();
                     for (size_t index = 0; index < string.getSize(); index++)
                         m_caret.Index = static_cast<int>(Insert(m_caret.Index, string[index]));
@@ -751,11 +757,9 @@ namespace Gx
         if (ev.unicode <= 31)
             return;
 
-#ifdef __APPLE__
         // Delete key
-        if (ev.unicode == 127)
+        if (GetCurrentPlatform() == Platform::macOS && ev.unicode == 127)
             return;
-#endif
 
         // Only accept numbers
         if (m_numeric && (ev.unicode < 48 || ev.unicode > 57))
