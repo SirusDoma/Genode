@@ -4,6 +4,8 @@
 #include <Genode/IO/ResourceContext.hpp>
 #include <Genode/Utilities/StringHelper.hpp>
 
+#include <tuple>
+
 namespace Gx
 {
     template<typename Ctx>
@@ -39,13 +41,13 @@ namespace Gx
     std::enable_if_t<std::is_base_of_v<Scene, T>, void>
     SceneDirector::Register()
     {
-        m_deserializers[typeid(T)] = SceneDeserializer<T>([this] (const ResourceContext&) -> ResourcePtr<T>
+        m_deserializers[typeid(T)] = SceneGenericDeserializer([this] (const ResourceContext&) -> ResourcePtr<Scene>
         {
             auto context = GetContext().CreateScope();
             auto scene   = context.Instantiate<T>();
 
             scene->SetContext(context);
-            return scene;
+            return Cast<Scene>(std::move(scene));
         });
     }
 
@@ -53,17 +55,20 @@ namespace Gx
     std::enable_if_t<std::is_base_of_v<Scene, T>, void>
     SceneDirector::Register(const SceneDeserializer<T>& deserializer)
     {
-        m_deserializers[typeid(T)] = deserializer;
+        m_deserializers[typeid(T)] = SceneGenericDeserializer([deserializer] (const ResourceContext& ctx)
+        {
+            return Cast<Scene>(deserializer(ctx));
+        });
     }
 
     template<typename T, typename... Args>
     std::enable_if_t<std::is_base_of_v<Scene, T>, void>
     SceneDirector::Present(T& scene, Args&&... args)
     {
-        m_deserializers[typeid(T)] = [&scene] (const ResourceContext&) -> ResourcePtr<T>
+        m_deserializers[typeid(T)] = SceneGenericDeserializer([&scene] (const ResourceContext&) -> ResourcePtr<Scene>
         {
-            return std::unique_ptr<T>(&scene, [] (auto) {});
-        };
+            return Cast<Scene>(ResourcePtr<T>(&scene, [] (auto) {}));
+        });
 
         return Present<T>(std::forward<Args>(args)...);
     }
@@ -72,16 +77,13 @@ namespace Gx
     std::enable_if_t<std::is_base_of_v<Scene, T> && std::is_base_of_v<ResourceContext, Ctx>, void>
     SceneDirector::Present(const Ctx& context, Args&&... args)
     {
-        ResourcePtr<T> scene = nullptr;
-        SceneDeserializer<T> deserializer = nullptr;
+        ResourcePtr<Scene> scene = nullptr;
+        SceneGenericDeserializer deserializer = nullptr;
 
         if (const auto it = m_deserializers.find(typeid(T)); it != m_deserializers.end())
         {
-            if (it->second.type() == typeid(SceneDeserializer<T>))
-            {
-                deserializer = std::any_cast<SceneDeserializer<T>>(it->second);
-                scene        = deserializer(context);
-            }
+            deserializer = it->second;
+            scene        = deserializer(context);
         }
 
         if (!scene)
@@ -96,24 +98,33 @@ namespace Gx
         if (!scene)
             throw ArgumentException(StringHelper::GetTypeName(typeid(T)) + " is not registered");
 
-        if (T::IsTrackable())
+        std::function<void()> initializer = nullptr;
+        if constexpr(sizeof...(Args) > 0)
         {
-            m_initializer = nullptr;
-            if constexpr(sizeof...(Args) > 0)
+            if constexpr((std::is_copy_constructible_v<std::decay_t<Args>> && ...))
             {
-                m_initializer = [=, target = scene.get()]
+                initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())]
                 {
-                    target->Initialize(args...);
+                    std::apply([target] (const auto&... unpacked) { target->Initialize(unpacked...); }, arguments);
+                };
+
+                m_initializer = initializer;
+            }
+            else
+            {
+                m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())] () mutable
+                {
+                    std::apply([target] (auto&... unpacked) { target->Initialize(std::move(unpacked)...); }, arguments);
                 };
             }
-
-            m_stack.emplace(typeid(T), m_initializer, context, [deserializer] (const ResourceContext& ctx)
-            {
-                return Cast<Scene>(std::move(deserializer(ctx)));
-            });
         }
+        else
+            m_initializer = nullptr;
 
-        m_nextScene = Cast<Scene>(std::move(scene));
+        if (T::IsTrackable())
+            m_stack.emplace(typeid(T), initializer, context, deserializer);
+
+        m_nextScene = std::move(scene);
         Unstage();
     }
 
@@ -153,9 +164,9 @@ namespace Gx
         m_initializer = presentation.Initializer;
         if constexpr(sizeof...(Args) > 0)
         {
-            m_initializer = [=, target = dynamic_cast<T*>(scene.get())]
+            m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())] () mutable
             {
-                target->Initialize(args...);
+                std::apply([target] (auto&... unpacked) { target->Initialize(std::move(unpacked)...); }, arguments);
             };
         }
 
@@ -201,9 +212,9 @@ namespace Gx
         m_initializer = presentation.Initializer;
         if constexpr(sizeof...(Args) > 0)
         {
-            m_initializer = [=, target = dynamic_cast<T*>(scene.get())]
+            m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())] () mutable
             {
-                target->Initialize(args...);
+                std::apply([target] (auto&... unpacked) { target->Initialize(std::move(unpacked)...); }, arguments);
             };
         }
 

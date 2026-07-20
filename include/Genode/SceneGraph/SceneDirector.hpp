@@ -7,7 +7,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include <any>
 #include <typeindex>
 #include <stack>
 #include <Genode/IO/ResourceContext.hpp>
@@ -17,6 +16,75 @@ namespace Gx
     class ResourceContext;
     template <typename T>
     using SceneDeserializer = std::function<ResourcePtr<T>(const ResourceContext&)>;
+
+    class SceneInitializer
+    {
+    public:
+        SceneInitializer() = default;
+
+        SceneInitializer(std::nullptr_t)
+        {
+        }
+
+        SceneInitializer(std::function<void()> initializer)
+        {
+            if (initializer)
+                m_invocable = std::make_unique<Invocable<std::function<void()>>>(std::move(initializer));
+        }
+
+        template<typename Fn, typename = std::enable_if_t<
+            !std::is_same_v<std::decay_t<Fn>, SceneInitializer>      &&
+            !std::is_same_v<std::decay_t<Fn>, std::function<void()>> &&
+            !std::is_same_v<std::decay_t<Fn>, std::nullptr_t>
+        >>
+        SceneInitializer(Fn&& initializer) :
+            m_invocable(std::make_unique<Invocable<std::decay_t<Fn>>>(std::forward<Fn>(initializer)))
+        {
+        }
+
+        SceneInitializer(SceneInitializer&& initializer) = default;
+        SceneInitializer& operator=(SceneInitializer&& initializer) = default;
+
+        SceneInitializer& operator=(std::nullptr_t)
+        {
+            m_invocable = nullptr;
+            return *this;
+        }
+
+        explicit operator bool() const
+        {
+            return m_invocable != nullptr;
+        }
+
+        void operator()() const
+        {
+            m_invocable->Invoke();
+        }
+
+    private:
+        struct InvocableBase
+        {
+            virtual ~InvocableBase() = default;
+            virtual void Invoke() = 0;
+        };
+
+        template<typename Fn>
+        struct Invocable final : InvocableBase
+        {
+            explicit Invocable(Fn callback) : Callback(std::move(callback))
+            {
+            }
+
+            void Invoke() override
+            {
+                Callback();
+            }
+
+            Fn Callback;
+        };
+
+        std::unique_ptr<InvocableBase> m_invocable;
+    };
 
     class Scene;
     class Application;
@@ -125,8 +193,8 @@ namespace Gx
             );
         };
 
-        using SceneDeserializerMap     = std::unordered_map<std::type_index, std::any>;
         using SceneGenericDeserializer = std::function<ResourcePtr<Scene>(const ResourceContext&)>;
+        using SceneDeserializerMap     = std::unordered_map<std::type_index, SceneGenericDeserializer>;
         using ScenePresentationStack   = std::stack<ScenePresentationData>;
 
         void Stage();
@@ -137,7 +205,7 @@ namespace Gx
         ScenePresentationStack  m_stack{};
         ResourcePtr<Scene>      m_currentScene{};
         ResourcePtr<Scene>      m_nextScene{};
-        std::function<void()>   m_initializer{};;
+        SceneInitializer        m_initializer{};
         mutable Context         m_context{};
         mutable bool            m_staged{false};
     };
