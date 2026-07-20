@@ -29,7 +29,7 @@ namespace Gx
                 m_currentScene->SetContext(GetContext().CreateScope());
 
             if (m_initializer)
-                m_initializer();
+                m_initializer(*m_currentScene);
             else
                 m_currentScene->Initialize();
 

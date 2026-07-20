@@ -17,6 +17,7 @@ namespace Gx
     template <typename T>
     using SceneDeserializer = std::function<ResourcePtr<T>(const ResourceContext&)>;
 
+    class Scene;
     class SceneInitializer
     {
     public:
@@ -26,15 +27,15 @@ namespace Gx
         {
         }
 
-        SceneInitializer(std::function<void()> initializer)
+        SceneInitializer(std::function<void(Scene&)> initializer)
         {
             if (initializer)
-                m_invocable = std::make_unique<Invocable<std::function<void()>>>(std::move(initializer));
+                m_invocable = std::make_unique<Invocable<std::function<void(Scene&)>>>(std::move(initializer));
         }
 
         template<typename Fn, typename = std::enable_if_t<
-            !std::is_same_v<std::decay_t<Fn>, SceneInitializer>      &&
-            !std::is_same_v<std::decay_t<Fn>, std::function<void()>> &&
+            !std::is_same_v<std::decay_t<Fn>, SceneInitializer>            &&
+            !std::is_same_v<std::decay_t<Fn>, std::function<void(Scene&)>> &&
             !std::is_same_v<std::decay_t<Fn>, std::nullptr_t>
         >>
         SceneInitializer(Fn&& initializer) :
@@ -56,16 +57,16 @@ namespace Gx
             return m_invocable != nullptr;
         }
 
-        void operator()() const
+        void operator()(Scene& scene) const
         {
-            m_invocable->Invoke();
+            m_invocable->Invoke(scene);
         }
 
     private:
         struct InvocableBase
         {
             virtual ~InvocableBase() = default;
-            virtual void Invoke() = 0;
+            virtual void Invoke(Scene& scene) = 0;
         };
 
         template<typename Fn>
@@ -75,9 +76,9 @@ namespace Gx
             {
             }
 
-            void Invoke() override
+            void Invoke(Scene& scene) override
             {
-                Callback();
+                Callback(scene);
             }
 
             Fn Callback;
@@ -180,14 +181,14 @@ namespace Gx
         struct ScenePresentationData
         {
             std::type_index                   Type;
-            std::function<void()>             Initializer{nullptr};
+            std::function<void(Scene&)>       Initializer{nullptr};
             std::shared_ptr<ResourceContext>  Context{nullptr};
             SceneDeserializer<Scene>          Deserializer{nullptr};
 
             template<typename Ctx>
             ScenePresentationData(
                 std::type_index type,
-                const std::function<void()>& initializer,
+                const std::function<void(Scene&)>& initializer,
                 const Ctx& context,
                 const SceneDeserializer<Scene>& deserializer
             );

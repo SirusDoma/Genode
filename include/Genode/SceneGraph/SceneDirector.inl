@@ -11,7 +11,7 @@ namespace Gx
     template<typename Ctx>
     SceneDirector::ScenePresentationData::ScenePresentationData(
         const std::type_index type,
-        const std::function<void()>& initializer,
+        const std::function<void(Scene&)>& initializer,
         const Ctx& context,
         const SceneDeserializer<Scene>& deserializer
     ) :
@@ -98,23 +98,23 @@ namespace Gx
         if (!scene)
             throw ArgumentException(StringHelper::GetTypeName(typeid(T)) + " is not registered");
 
-        std::function<void()> initializer = nullptr;
+        std::function<void(Scene&)> initializer = nullptr;
         if constexpr(sizeof...(Args) > 0)
         {
             if constexpr((std::is_copy_constructible_v<std::decay_t<Args>> && ...))
             {
-                initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())]
+                initializer = [arguments = std::make_tuple(std::forward<Args>(args)...)] (Scene& target)
                 {
-                    std::apply([target] (const auto&... unpacked) { target->Initialize(unpacked...); }, arguments);
+                    std::apply([&target] (const auto&... unpacked) { dynamic_cast<T&>(target).Initialize(unpacked...); }, arguments);
                 };
 
                 m_initializer = initializer;
             }
             else
             {
-                m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())] () mutable
+                m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...)] (Scene& target) mutable
                 {
-                    std::apply([target] (auto&... unpacked) { target->Initialize(std::move(unpacked)...); }, arguments);
+                    std::apply([&target] (auto&... unpacked) { dynamic_cast<T&>(target).Initialize(std::move(unpacked)...); }, arguments);
                 };
             }
         }
@@ -164,9 +164,9 @@ namespace Gx
         m_initializer = presentation.Initializer;
         if constexpr(sizeof...(Args) > 0)
         {
-            m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())] () mutable
+            m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...)] (Scene& target) mutable
             {
-                std::apply([target] (auto&... unpacked) { target->Initialize(std::move(unpacked)...); }, arguments);
+                std::apply([&target] (auto&... unpacked) { dynamic_cast<T&>(target).Initialize(std::move(unpacked)...); }, arguments);
             };
         }
 
@@ -212,9 +212,9 @@ namespace Gx
         m_initializer = presentation.Initializer;
         if constexpr(sizeof...(Args) > 0)
         {
-            m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...), target = dynamic_cast<T*>(scene.get())] () mutable
+            m_initializer = [arguments = std::make_tuple(std::forward<Args>(args)...)] (Scene& target) mutable
             {
-                std::apply([target] (auto&... unpacked) { target->Initialize(std::move(unpacked)...); }, arguments);
+                std::apply([&target] (auto&... unpacked) { dynamic_cast<T&>(target).Initialize(std::move(unpacked)...); }, arguments);
             };
         }
 
