@@ -75,11 +75,20 @@ else()
 endif()
 
 # -- SFML
-FetchContent_Declare(
-    SFML
-    GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.1.0
-)
+option(USE_CUSTOM_SFML "Use the SirusDoma SFML fork instead of upstream SFML" OFF)
+if(USE_CUSTOM_SFML)
+    FetchContent_Declare(
+        SFML
+        GIT_REPOSITORY https://github.com/SirusDoma/SFML.git
+        GIT_TAG graphics/modular
+    )
+else()
+    FetchContent_Declare(
+        SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 3.1.0
+    )
+endif()
 FetchContent_MakeAvailable(SFML)
 
 # -- JSON
