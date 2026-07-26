@@ -12,7 +12,10 @@ namespace Gx
         m_outlineColor(sf::Color::Black),
         m_outlineThickness(1.f),
         m_duration(),
-        m_elapsed()
+        m_elapsed(),
+        m_delay(),
+        m_delayElapsed(),
+        m_pending(false)
     {
     }
 
@@ -24,7 +27,10 @@ namespace Gx
         m_outlineColor(sf::Color::Black),
         m_outlineThickness(1.f),
         m_duration(),
-        m_elapsed()
+        m_elapsed(),
+        m_delay(),
+        m_delayElapsed(),
+        m_pending(false)
     {
     }
 
@@ -33,16 +39,15 @@ namespace Gx
         return m_rectangle.GetLocalBounds();
     }
 
-    void ToolTip::Show(const Control* parent)
+    void ToolTip::Show(const Control& parent)
     {
-        auto position = sf::Vector2f();
+        auto position  = sf::Vector2f();
         auto alignment = Alignment::Left;
-        if (parent)
-        {
-            position = sf::Vector2f(parent->GetLocalBounds().size.x, parent->GetLocalBounds().size.y) / 2.f;
-            position = sf::Vector2f(static_cast<int>(position.x), static_cast<int>(position.y));
-            alignment = Alignment::Center;
-        }
+        auto bounds    = parent.GetLocalBounds();
+
+        position  = sf::Vector2f(bounds.size.x, bounds.size.y) / 2.f;
+        position  = sf::Vector2f(static_cast<int>(position.x), static_cast<int>(position.y));
+        alignment = Alignment::Center;
 
         Show(position, alignment);
     }
@@ -53,12 +58,12 @@ namespace Gx
         {
             Invalidate();
             if (alignment == Alignment::Center)
-                SetOrigin(m_rectangle.GetSize().x / 2.f, m_rectangle.GetSize().y / 2.f);
+                SetLineAlignment(LineAlignment::Center);
             else
-                SetOrigin(m_rectangle.GetSize().x, m_rectangle.GetSize().y);
+                SetLineAlignment(LineAlignment::Right);
         }
         else
-            SetOrigin(sf::Vector2f());
+            SetLineAlignment(LineAlignment::Left);
 
         SetPosition(position);
         Show();
@@ -66,13 +71,18 @@ namespace Gx
 
     void ToolTip::Show()
     {
-        m_elapsed = sf::Time::Zero;
+        m_delayElapsed = sf::Time::Zero;
+        m_pending      = m_delay > sf::Time::Zero;
+        m_elapsed      = m_pending ? m_duration : sf::Time::Zero;
+
         Invalidate();
     }
 
     void ToolTip::Hide()
     {
-        m_elapsed = m_duration;
+        m_delayElapsed = sf::Time::Zero;
+        m_pending      = false;
+        m_elapsed      = m_duration;
     }
 
     const sf::Time& ToolTip::GetDuration() const
@@ -88,6 +98,16 @@ namespace Gx
             m_duration = duration;
             m_elapsed = visible ? sf::Time::Zero : duration;
         }
+    }
+
+    const sf::Time& ToolTip::GetDelay() const
+    {
+        return m_delay;
+    }
+
+    void ToolTip::SetDelay(const sf::Time& delay)
+    {
+        m_delay = delay;
     }
 
     sf::Vector2f ToolTip::GetPadding() const
@@ -162,7 +182,19 @@ namespace Gx
     {
         Label::Update(delta);
 
-        if (m_elapsed < m_duration)
+        if (m_pending)
+        {
+            m_delayElapsed += delta;
+            if (m_delayElapsed >= m_delay)
+            {
+                m_delayElapsed = sf::Time::Zero;
+                m_pending      = false;
+                m_elapsed      = sf::Time::Zero;
+
+                Invalidate();
+            }
+        }
+        else if (m_elapsed < m_duration)
             m_elapsed += delta;
 
         if (IsVisible())
@@ -176,8 +208,12 @@ namespace Gx
         const auto bounds = Text::GetLocalBounds();
         const auto size   = sf::Vector2f(bounds.size.x, bounds.size.y) + (m_padding * 2.f);
 
+        if (GetLineAlignment() != LineAlignment::Center)
+            m_rectangle.SetPosition(sf::Vector2f(0, std::ceil(m_padding.y * 1.5f)));
+        else
+            m_rectangle.SetPosition(sf::Vector2f(-1.f * (std::ceil(bounds.size.x / 2.f) + m_padding.x), std::ceil(m_padding.y * 1.5f)));
+
         m_rectangle.SetSize({ std::ceil(size.x), std::ceil(size.y) });
-        m_rectangle.SetPosition(sf::Vector2f(0, std::ceil(m_padding.y * 1.5f)));
         m_rectangle.SetColor(m_fillColor);
         m_rectangle.SetOutlineColor(m_outlineColor);
         m_rectangle.SetOutlineThickness(m_outlineThickness);

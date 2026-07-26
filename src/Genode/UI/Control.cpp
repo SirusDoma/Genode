@@ -85,14 +85,13 @@ namespace Gx
     sf::FloatRect Control::GetGlobalBounds() const
     {
         auto parent    = GetParent();
-        auto transform = sf::Transform::Identity;
+        auto transform = GetTransform();
         while (parent)
         {
             transform *= parent->GetTransform();
             parent = parent->GetParent();
         }
 
-        transform *= GetTransform();
         return transform.transformRect(GetLocalBounds());
     }
 

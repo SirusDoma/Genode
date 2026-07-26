@@ -16,13 +16,16 @@ namespace Gx
 
         [[nodiscard]] sf::FloatRect GetLocalBounds() const override;
 
-        void Show(const Control* parent);
+        void Show(const Control& parent);
         void Show(sf::Vector2f position, Alignment alignment = Alignment::Center);
         void Show();
         void Hide();
 
         [[nodiscard]] const sf::Time& GetDuration() const;
         void SetDuration(const sf::Time& duration);
+
+        [[nodiscard]] const sf::Time& GetDelay() const;
+        void SetDelay(const sf::Time& delay);
 
         [[nodiscard]] sf::Vector2f GetPadding() const;
         void SetPadding(const sf::Vector2f& padding);
@@ -48,5 +51,7 @@ namespace Gx
         sf::Color    m_fillColor, m_outlineColor;
         float        m_outlineThickness;
         sf::Time     m_duration, m_elapsed;
+        sf::Time     m_delay, m_delayElapsed;
+        bool         m_pending;
     };
 }
