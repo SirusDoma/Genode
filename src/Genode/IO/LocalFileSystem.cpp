@@ -10,17 +10,6 @@
 #include <fstream>
 #include <filesystem>
 
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-#include <dlfcn.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/sysctl.h>
-
-typedef OSStatus (*SecTranslocateIsTranslocatedURLFunc)(CFURLRef url, Boolean* isTranslocated);
-typedef CFURLRef __nullable (*SecTranslocateCreateOriginalPathForURLFunc)(CFURLRef translocatedPath, CFErrorRef* __nullable error);
-#endif
-
 namespace Gx
 {
     LocalFileSystem& LocalFileSystem::Instance()
@@ -59,9 +48,12 @@ namespace Gx
         std::filesystem::current_path(workingDir);
     }
 
-    std::vector<std::filesystem::path> LocalFileSystem::GetAssetPaths()
+    std::vector<std::filesystem::path> LocalFileSystem::GetAssetPaths(const bool includeCurrentPath)
     {
         auto paths = std::vector<std::filesystem::path>();
+        if (includeCurrentPath)
+            paths.push_back(std::filesystem::current_path());
+
         for (const auto& p : m_paths)
             paths.push_back(std::filesystem::weakly_canonical(p));
 
@@ -93,8 +85,12 @@ namespace Gx
 
     std::optional<std::size_t> LocalFileSystem::GetFileSize(const std::filesystem::path& fileName) const
     {
-        if (auto fileStream = sf::FileInputStream(); fileStream.open(GetFullName(fileName)))
-            return fileStream.getSize();
+        if (!std::filesystem::is_regular_file(fileName))
+            return std::nullopt;
+
+        std::error_code err;
+        if (const auto size = std::filesystem::file_size(fileName, err); !err)
+            return static_cast<std::size_t>(size);
 
         return std::nullopt;
     }
@@ -196,7 +192,7 @@ namespace Gx
         std::vector<std::unique_ptr<FileInfo>> files;
         std::unordered_set<std::string> scanned;
 
-        auto paths = m_paths;
+        auto paths = GetAssetPaths();
         for (const auto& dir : paths)
         {
             if (!std::filesystem::exists(dir))
@@ -204,16 +200,16 @@ namespace Gx
 
             for (const auto& entry : std::filesystem::directory_iterator(dir))
             {
-                if (is_directory(entry) && recursive)
+                if (std::filesystem::is_directory(entry) && recursive)
                 {
                     paths.push_back(entry.path());
                     continue;
                 }
 
-                if (!is_regular_file(entry))
+                if (!std::filesystem::is_regular_file(entry))
                     continue;
 
-                auto fileName = weakly_canonical(entry.path()).string();
+                auto fileName = std::filesystem::weakly_canonical(entry.path()).string();
                 if (auto [_, inserted] = scanned.insert(fileName); !inserted)
                     continue;
 

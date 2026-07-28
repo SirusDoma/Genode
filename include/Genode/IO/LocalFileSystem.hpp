@@ -18,7 +18,7 @@ namespace Gx
         [[nodiscard]] static std::filesystem::path GetWorkingDirectory();
         static void SetWorkingDirectory(const std::filesystem::path& inputPath);
 
-        [[nodiscard]] static std::vector<std::filesystem::path> GetAssetPaths();
+        [[nodiscard]] static std::vector<std::filesystem::path> GetAssetPaths(bool includeCurrentPath = true);
         static void AddAssetPath(const std::filesystem::path& path);
 
         [[nodiscard]] std::filesystem::path GetFileName(const std::filesystem::path& fullPath,bool withExtension = true) const;
