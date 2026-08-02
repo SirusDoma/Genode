@@ -330,26 +330,9 @@ namespace Gx
         m_maxLength = maxLength;
     }
 
-    void InputField::SetTextEnteredCallback(std::function<void(InputField&, const sf::String&)> callback)
+    void InputField::SetTextEnteredCallback(std::function<void(InputField&, TextEnteredEvent&)> callback)
     {
         m_onTextEntered = std::move(callback);
-    }
-
-    bool InputField::IsNextCharacterFit()
-    {
-        const auto string = m_label.GetString();
-        auto index  = m_caret.Index;
-
-        if (m_caret.SelectionLength != 0)
-            index = static_cast<int>(Erase(index - 1, m_caret.SelectionLength));
-
-        auto newString = m_label.GetString();
-        newString.insert(index, " ");
-        m_label.SetString(newString);
-        const bool fit = m_label.GetLocalBounds().size.x <= m_bounds.size.x;
-
-        m_label.SetString(string);
-        return fit;
     }
 
     void InputField::Select(const std::size_t index, const int selectionLength)
@@ -394,20 +377,14 @@ namespace Gx
         if (m_maxLength > 0 && selectionLength == 0 && m_label.GetString().getSize() >= m_maxLength)
             return index;
 
-        // Max visual bounds validation
-        if (IsNextCharacterFit())
-        {
-            if (m_caret.SelectionLength != 0)
-                index = Erase(index - 1, selectionLength);
+        if (m_caret.SelectionLength != 0)
+            index = Erase(index - 1, selectionLength);
 
-            auto string = m_label.GetString();
-            string.insert(index, sf::String(static_cast<char32_t>(unicode)));
-            m_label.SetString(string);
+        auto string = m_label.GetString();
+        string.insert(index, sf::String(static_cast<char32_t>(unicode)));
+        m_label.SetString(string);
 
-            return ++index;
-        }
-
-        return index;
+        return ++index;
     }
 
     std::size_t InputField::Erase(std::size_t index, const int length)
@@ -501,12 +478,37 @@ namespace Gx
             return states;
 
         states.transform *= GetTransform();
-        if (m_caret.SelectionLength != 0)
-            surface.Render(m_caret.GetHighlight(), states);
 
-        surface.Render(m_label, states);
+        if (m_bounds.size.x > 0.f && m_bounds.size.y > 0.f)
+        {
+            const float boxLeft  = m_bounds.position.x;
+            const float boxRight = boxLeft + m_bounds.size.x;
+            const float caretX   = FindCharacterPosition(static_cast<std::size_t>(std::max(m_caret.Index, 0))).x;
+            const float endX     = FindCharacterPosition(m_label.GetString().getSize()).x;
+
+            m_scroll = std::clamp(m_scroll, 0.f, std::max(0.f, endX - boxRight));
+            if (caretX - m_scroll > boxRight)
+                m_scroll = caretX - boxRight;
+            else if (caretX - m_scroll < boxLeft)
+                m_scroll = caretX - boxLeft;
+
+            m_label.ClipQuads(sf::FloatRect(
+                m_bounds.position + sf::Vector2f(m_scroll, 0.f) - m_label.GetPosition(),
+                m_bounds.size
+            ));
+        }
+        else
+            m_scroll = 0.f;
+
+        auto content = states;
+        content.transform.translate(sf::Vector2f(-m_scroll, 0.f));
+
+        if (m_caret.SelectionLength != 0)
+            surface.Render(m_caret.GetHighlight(), content);
+
+        surface.Render(m_label, content);
         if (IsFocused() && IsEnabled())
-            surface.Render(m_caret, states);
+            surface.Render(m_caret, content);
 
         return Control::Render(surface, states);
     }
@@ -525,7 +527,7 @@ namespace Gx
         for (size_t index = 0; index < positions.size(); index++)
         {
             const auto position  = m_label.GetTransform().transformPoint(positions[index]);
-            const float distance = std::abs((position.x + bounds.position.x) - static_cast<float>(ev.position.x));
+            const float distance = std::abs((position.x - m_scroll + bounds.position.x) - static_cast<float>(ev.position.x));
             if (minDistance == -1 || distance < minDistance)
             {
                 selectIndex = index;
@@ -632,7 +634,10 @@ namespace Gx
             // Trim front and back string from whitespaces
             const sf::String string = StringHelper::Trim(m_label.GetString());
             if (!string.isEmpty() && m_onTextEntered)
-                m_onTextEntered(*this, string);
+            {
+                auto textEv = TextEnteredEvent{{false, GetControlState()}, string};
+                m_onTextEntered(*this, textEv);
+            }
 
             m_label.SetString("");
             m_caret.SelectionLength = 0;

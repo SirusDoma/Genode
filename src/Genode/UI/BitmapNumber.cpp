@@ -172,7 +172,7 @@ namespace Gx
         return m_state;
     }
 
-    void BitmapNumber::SetAnimationCallback(const std::function<void(BitmapNumber&)> &animationCallback)
+    void BitmapNumber::SetAnimationCallback(const std::function<void(BitmapNumber&, Control::Event&)> &animationCallback)
     {
         m_callback = animationCallback;
     }
@@ -181,7 +181,10 @@ namespace Gx
     {
         m_state = Animation::AnimationState::Stopped;
         if (m_callback)
-            m_callback(*this);
+        {
+            auto uiEvent = Event{false, GetControlState()};
+            m_callback(*this, uiEvent);
+        }
     }
 
     void BitmapNumber::Reset()
@@ -192,7 +195,10 @@ namespace Gx
             m_elapseds[digit] = sf::Time::Zero;
             m_state = Animation::AnimationState::Initial;
             if (m_callback)
-                m_callback(*this);
+            {
+                auto uiEvent = Event{false, GetControlState()};
+                m_callback(*this, uiEvent);
+            }
         }
     }
 
@@ -212,7 +218,10 @@ namespace Gx
                     {
                         m_state = Animation::AnimationState::Playing;
                         if (m_callback)
-                            m_callback(*this);
+                        {
+                            auto uiEvent = Event{false, GetControlState()};
+                            m_callback(*this, uiEvent);
+                        }
                     }
 
                     m_elapseds[digit] %= frameTime;
@@ -220,7 +229,10 @@ namespace Gx
                     {
                         m_state = Animation::AnimationState::Completed;
                         if (m_callback)
-                            m_callback(*this);
+                        {
+                            auto uiEvent = Event{false, GetControlState()};
+                            m_callback(*this, uiEvent);
+                        }
                     }
                     else
                         m_frames[digit]++;

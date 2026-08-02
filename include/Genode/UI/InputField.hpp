@@ -13,6 +13,11 @@ namespace Gx
     class InputField : public Control, public virtual Colorable
     {
     public:
+        struct TextEnteredEvent : Event
+        {
+            sf::String Text;
+        };
+
         InputField();
         InputField(const Font& font, const sf::String& string, unsigned int characterSize = 30, const sf::FloatRect& bounds = sf::FloatRect());
         InputField(Font&& font, const sf::String& string, unsigned int characterSize = 30, sf::FloatRect bounds = sf::FloatRect()) = delete;
@@ -62,7 +67,7 @@ namespace Gx
 
         [[nodiscard]] unsigned int GetMaximumTextLength() const;
         void SetMaximumTextLength(unsigned int maxLength);
-        void SetTextEnteredCallback(std::function<void(InputField&, const sf::String&)> callback);
+        void SetTextEnteredCallback(std::function<void(InputField&, TextEnteredEvent&)> callback);
 
         void Select(size_t index, int selectionLength);
         void SelectAll();
@@ -73,7 +78,6 @@ namespace Gx
 
     private:
         [[nodiscard]] std::vector<sf::Vector2f> ComputeCursorPositions() const;
-        bool IsNextCharacterFit();
 
         void SetControlState(const State& state) override;
         [[nodiscard]] State GetControlState() const override;
@@ -120,12 +124,13 @@ namespace Gx
         Caret m_caret;
         sf::Color m_highlightColor;
         sf::FloatRect m_bounds;
+        mutable float m_scroll{0.f};
         unsigned int m_maxLength;
         bool m_permanentFocus;
         bool m_focused;
         bool m_numeric;
         Control::State m_state;
 
-        std::function<void(InputField&, const sf::String&)> m_onTextEntered;
+        std::function<void(InputField&, TextEnteredEvent&)> m_onTextEntered;
     };
 }

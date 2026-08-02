@@ -119,12 +119,12 @@ namespace Gx
         AddChild(cancelButton);
     }
 
-    void Dialog::SetAcceptCallback(std::function<void()> callback)
+    void Dialog::SetAcceptCallback(std::function<void(Control&, Control::Event&)> callback)
     {
         m_onAccepted = std::move(callback);
     }
 
-    void Dialog::SetCancelCallback(std::function<void()> callback)
+    void Dialog::SetCancelCallback(std::function<void(Control&, Control::Event&)> callback)
     {
         m_onCancelled = std::move(callback);
     }
@@ -205,19 +205,25 @@ namespace Gx
     void Dialog::OnAccepted()
     {
         m_accepted = true;
-        if (m_onAccepted)
-            m_onAccepted();
 
-        Dismiss();
+        auto uiEvent = Event{false, GetControlState()};
+        if (m_onAccepted)
+            m_onAccepted(*this, uiEvent);
+
+        if (!uiEvent.Handled)
+            Dismiss();
     }
 
     void Dialog::OnCancelled()
     {
         m_accepted = false;
-        if (m_onCancelled)
-            m_onCancelled();
 
-        Dismiss();
+        auto uiEvent = Event{false, GetControlState()};
+        if (m_onCancelled)
+            m_onCancelled(*this, uiEvent);
+
+        if (!uiEvent.Handled)
+            Dismiss();
     }
 
     sf::String Dialog::GetPromptString() const

@@ -62,8 +62,8 @@ namespace Gx
         void SetAcceptButton(Button& acceptButton);
         void SetCancelButton(Button& cancelButton);
 
-        void SetAcceptCallback(std::function<void()> callback);
-        void SetCancelCallback(std::function<void()> callback);
+        void SetAcceptCallback(std::function<void(Control&, Control::Event&)> callback);
+        void SetCancelCallback(std::function<void(Control&, Control::Event&)> callback);
 
         bool Dismiss() override;
 
@@ -89,7 +89,7 @@ namespace Gx
 
         bool m_accepted{};
         bool m_shown{};
-        std::function<void()> m_onAccepted{};
-        std::function<void()> m_onCancelled{};
+        std::function<void(Control&, Control::Event&)> m_onAccepted{};
+        std::function<void(Control&, Control::Event&)> m_onCancelled{};
     };
 }

@@ -52,7 +52,7 @@ namespace Gx
         void SetBlendMode(Gx::BlendMode blendMode);
 
         [[nodiscard]] Animation::AnimationState GetAnimationState() const;
-        void SetAnimationCallback(const std::function<void(BitmapNumber&)> &animationCallback);
+        void SetAnimationCallback(const std::function<void(BitmapNumber&, Control::Event&)> &animationCallback);
 
         void Stop();
         void Reset();
@@ -78,7 +78,7 @@ namespace Gx
         std::unordered_map<unsigned int, sf::Time> m_elapseds;
         std::unordered_map<unsigned int, unsigned int> m_frames;
 
-        std::function<void(BitmapNumber&)> m_callback;
+        std::function<void(BitmapNumber&, Control::Event&)> m_callback;
         std::unordered_map<unsigned int, std::vector<sf::IntRect>> m_texCoords;
     };
 }
