@@ -4,7 +4,7 @@
 
 #include <cstddef>
 
-namespace Gx::Events
+namespace Gx
 {
     ////////////////////////////////////////////////////////////
     /// @brief Represents the identity of a subscription within a dispatcher

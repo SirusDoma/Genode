@@ -7,9 +7,12 @@
 #include <tuple>
 #include <type_traits>
 
-namespace Gx::Events
+namespace Gx
 {
     class EventDispatcher;
+
+    template <typename TKey, typename... TArgs>
+    struct Event;
 
     ////////////////////////////////////////////////////////////
     /// @brief Represents the type-erased base of the subscribers
@@ -142,6 +145,21 @@ namespace Gx::Events
         EventHandler<TArgs...> m_handler;  //!< The handler to invoke with dispatched arguments
     };
 
+    namespace priv
+    {
+        template <typename... Ts>
+        struct SubscriberAlias
+        {
+            using Type = SubscriberImpl<CanonicalType<Ts>...>;
+        };
+
+        template <typename TKey, typename... TArgs>
+        struct SubscriberAlias<Event<TKey, TArgs...>>
+        {
+            using Type = SubscriberImpl<CanonicalType<TKey>, CanonicalType<TArgs>...>;
+        };
+    }
+
     ////////////////////////////////////////////////////////////
     /// @brief Represents an active subscription to events of a matching key and argument list
     ///
@@ -154,15 +172,18 @@ namespace Gx::Events
     /// handler takes them, they are canonicalized to the stored
     /// types:
     /// @code
-    /// Gx::Events::Subscriber<const char*, const std::string&, int> m_subscriber;
+    /// Gx::Subscriber<const char*, const std::string&, int> m_subscriber;
     ///
     /// m_subscriber = dispatcher.On("key", [](const std::string& text, int value) { ... });
     /// @endcode
     ///
-    /// @see `EventDispatcher::On`
+    /// An `Event` type may be used as the sole parameter, the
+    /// subscriber is then declared from its key and argument list.
+    ///
+    /// @see `EventDispatcher::On`, `Event`
     ////////////////////////////////////////////////////////////
-    template <typename TKey, typename... TArgs>
-    using Subscriber = SubscriberImpl<priv::CanonicalType<TKey>, priv::CanonicalType<TArgs>...>;
+    template <typename... Ts>
+    using Subscriber = typename priv::SubscriberAlias<Ts...>::Type;
 
     namespace priv
     {

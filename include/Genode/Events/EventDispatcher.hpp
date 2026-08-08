@@ -12,8 +12,24 @@
 #include <unordered_map>
 #include <vector>
 
-namespace Gx::Events
+namespace Gx
 {
+    ////////////////////////////////////////////////////////////
+    /// @brief Describes an event as a key bound to a fixed argument list
+    ///
+    /// Subscribing or dispatching through an `Event` constrains
+    /// the handler and the dispatched arguments to the declared
+    /// list at compile time; the runtime behavior is identical
+    /// to using the key directly.
+    ///
+    /// @see `EventDispatcher`
+    ////////////////////////////////////////////////////////////
+    template <typename TKey, typename... TArgs>
+    struct Event
+    {
+        TKey Key; //!< The key identifying the event
+    };
+
     ////////////////////////////////////////////////////////////
     /// @brief Provides a keyed event dispatching mechanism
     ///
@@ -67,6 +83,26 @@ namespace Gx::Events
         [[nodiscard]] auto On(TKey&& key, THandler&& handler, std::function<void()> onUnsubscribe = nullptr);
 
         ////////////////////////////////////////////////////////////
+        /// @brief Subscribes the specified handler to the specified event
+        ///
+        /// The handler must be invocable with the event argument
+        /// list; a mismatch fails to compile.
+        ///
+        /// @param event         The event to subscribe to
+        /// @param handler       The handler invoked with the dispatched arguments
+        /// @param onUnsubscribe Invoked once when the returned subscriber
+        ///                      unsubscribes itself (typically on destruction);
+        ///                      immutable after subscription
+        ///
+        /// @return A `Subscriber` of the event key and argument types
+        ///         that unsubscribes the handler when destroyed
+        ///
+        /// @see `Event`, `Off`, `Dispatch`, `Enqueue`, `Subscriber`
+        ////////////////////////////////////////////////////////////
+        template <typename TKey, typename... TArgs, typename THandler>
+        [[nodiscard]] auto On(const Event<TKey, TArgs...>& event, THandler&& handler, std::function<void()> onUnsubscribe = nullptr);
+
+        ////////////////////////////////////////////////////////////
         /// @brief Unsubscribes the specified subscriber if it is registered on this dispatcher
         ///
         /// @param subscriber The subscriber to unsubscribe
@@ -96,6 +132,21 @@ namespace Gx::Events
         void Dispatch(TKey&& key, TArgs&&... arguments);
 
         ////////////////////////////////////////////////////////////
+        /// @brief Dispatches the specified event synchronously
+        ///
+        /// The arguments must be non-const lvalues of the event
+        /// argument list; a mismatch fails to compile. They are
+        /// passed by reference like the key overload passes them.
+        ///
+        /// @param event     The event to dispatch
+        /// @param arguments The event arguments to deliver
+        ///
+        /// @see `Event`, `On`, `Enqueue`
+        ////////////////////////////////////////////////////////////
+        template <typename TKey, typename... TArgs>
+        void Dispatch(const Event<TKey, TArgs...>& event, TArgs&... arguments);
+
+        ////////////////////////////////////////////////////////////
         /// @brief Enqueues an event until the queue is dispatched
         ///
         /// The arguments are forwarded like `Dispatch` forwards
@@ -112,6 +163,21 @@ namespace Gx::Events
         ////////////////////////////////////////////////////////////
         template <typename TKey, typename... TArgs>
         void Enqueue(TKey&& key, TArgs&&... arguments);
+
+        ////////////////////////////////////////////////////////////
+        /// @brief Enqueues the specified event until the queue is dispatched
+        ///
+        /// The arguments must be non-const lvalues of the event
+        /// argument list and are stored by reference: they must
+        /// remain valid until `DispatchQueue` delivers the event.
+        ///
+        /// @param event     The event to enqueue
+        /// @param arguments The event arguments to deliver
+        ///
+        /// @see `Event`, `DispatchQueue`, `Dispatch`
+        ////////////////////////////////////////////////////////////
+        template <typename TKey, typename... TArgs>
+        void Enqueue(const Event<TKey, TArgs...>& event, TArgs&... arguments);
 
         ////////////////////////////////////////////////////////////
         /// @brief Dispatches every enqueued event on the calling thread

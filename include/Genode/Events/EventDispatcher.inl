@@ -4,7 +4,7 @@
 
 #include <utility>
 
-namespace Gx::Events
+namespace Gx
 {
     ////////////////////////////////////////////////////////////
     template <typename TKey, typename... TArgs>
@@ -49,6 +49,16 @@ namespace Gx::Events
 
 
     ////////////////////////////////////////////////////////////
+    template <typename TKey, typename... TArgs, typename THandler>
+    auto EventDispatcher::On(const Event<TKey, TArgs...>& event, THandler&& handler, std::function<void()> onUnsubscribe)
+    {
+        static_assert(std::is_invocable_v<THandler, TArgs&...>, "Handler does not match the event argument list");
+
+        return On(event.Key, std::forward<THandler>(handler), std::move(onUnsubscribe));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     template <typename TKey, typename... TArgs>
     void EventDispatcher::Dispatch(TKey&& key, TArgs&&... arguments)
     {
@@ -61,12 +71,28 @@ namespace Gx::Events
 
     ////////////////////////////////////////////////////////////
     template <typename TKey, typename... TArgs>
+    void EventDispatcher::Dispatch(const Event<TKey, TArgs...>& event, TArgs&... arguments)
+    {
+        Dispatch(event.Key, arguments...);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename TKey, typename... TArgs>
     void EventDispatcher::Enqueue(TKey&& key, TArgs&&... arguments)
     {
         Store([this,
               canonicalKey       = priv::CanonicalType<TKey>(std::forward<TKey>(key)),
               forwardedArguments = std::tuple<priv::ForwardedType<TArgs>...>(std::forward<TArgs>(arguments)...)]() mutable
              { Publish<priv::CanonicalType<TKey>, priv::CanonicalType<TArgs>...>(canonicalKey, forwardedArguments); });
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename TKey, typename... TArgs>
+    void EventDispatcher::Enqueue(const Event<TKey, TArgs...>& event, TArgs&... arguments)
+    {
+        Enqueue(event.Key, arguments...);
     }
 
 

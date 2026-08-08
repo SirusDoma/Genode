@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace Gx::Events
+namespace Gx
 {
     ////////////////////////////////////////////////////////////
     EventDispatcher::~EventDispatcher()
@@ -70,10 +70,20 @@ namespace Gx::Events
 
         // Iterate a snapshot so handlers may subscribe, unsubscribe or dispatch
         // further events while a dispatch is in progress; subscribers registered
-        // during the dispatch are not invoked for the event being delivered
+        // during the dispatch are not invoked for the event being delivered, and
+        // subscribers removed during it are skipped
         const auto subscribers = it->second;
         for (auto* subscriber : subscribers)
+        {
+            const auto subIt = m_subscriptions.find(registration);
+            if (subIt == m_subscriptions.end())
+                return;
+
+            if (std::find(subIt->second.begin(), subIt->second.end(), subscriber) == subIt->second.end())
+                continue;
+
             publisher(*subscriber);
+        }
     }
 
 

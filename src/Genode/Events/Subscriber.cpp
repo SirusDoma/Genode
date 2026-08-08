@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace Gx::Events
+namespace Gx
 {
     ////////////////////////////////////////////////////////////
     bool SubscriberBase::IsActive() const noexcept
