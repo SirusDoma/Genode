@@ -125,7 +125,7 @@ namespace Gx
             m_stack.emplace(typeid(T), initializer, context, deserializer);
 
         m_nextScene = std::move(scene);
-        Unstage();
+        m_staged    = false;
     }
 
     template<typename T, typename... Args>
@@ -171,7 +171,7 @@ namespace Gx
         }
 
         m_nextScene = std::move(scene);
-        Unstage();
+        m_staged    = false;
 
         return true;
     }
@@ -219,7 +219,7 @@ namespace Gx
         }
 
         m_nextScene = std::move(scene);
-        Unstage();
+        m_staged    = false;
 
         return true;
     }

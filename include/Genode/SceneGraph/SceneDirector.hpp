@@ -199,7 +199,6 @@ namespace Gx
         using ScenePresentationStack   = std::stack<ScenePresentationData>;
 
         void Stage();
-        void Unstage() const;
 
         RenderSurface&          m_surface;
         SceneDeserializerMap    m_deserializers{};
@@ -208,7 +207,7 @@ namespace Gx
         ResourcePtr<Scene>      m_nextScene{};
         SceneInitializer        m_initializer{};
         mutable Context         m_context{};
-        mutable bool            m_staged{false};
+        bool                    m_staged{false};
     };
 }
 

@@ -20,6 +20,9 @@ namespace Gx
     {
         if (m_nextScene && !m_staged)
         {
+            if (m_currentScene)
+                m_currentScene->Finalize();
+
             m_currentScene = std::move(m_nextScene);
             m_nextScene = nullptr;
 
@@ -35,15 +38,6 @@ namespace Gx
 
             m_initializer = nullptr;
             m_staged = true;
-        }
-    }
-
-    void SceneDirector::Unstage() const
-    {
-        if (m_currentScene)
-        {
-            m_currentScene->Finalize();
-            m_staged = false;
         }
     }
 
@@ -128,8 +122,8 @@ namespace Gx
         auto scene    = presentation.Deserializer(context ? *context : ResourceContext::Default);
         m_initializer = presentation.Initializer;
         m_nextScene   = std::move(scene);
+        m_staged      = false;
 
-        Unstage();
         return true;
     }
 
@@ -144,8 +138,8 @@ namespace Gx
         auto scene    = presentation.Deserializer(context);
         m_initializer = presentation.Initializer;
         m_nextScene   = std::move(scene);
+        m_staged      = false;
 
-        Unstage();
         return true;
     }
 
