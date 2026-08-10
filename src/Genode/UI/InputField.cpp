@@ -255,6 +255,11 @@ namespace Gx
         m_label.SetOutlineThickness(thickness);
     }
 
+    void InputField::SetOutlineOffset(const sf::Vector2f& offset)
+    {
+        m_label.SetOutlineOffset(offset);
+    }
+
     const sf::String& InputField::GetString() const
     {
         return m_label.GetString();

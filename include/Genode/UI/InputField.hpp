@@ -42,6 +42,7 @@ namespace Gx
         void SetHighlightTextColor(const sf::Color& color);
         void SetOutlineColor(const sf::Color& color);
         void SetOutlineThickness(float thickness);
+        void SetOutlineOffset(const sf::Vector2f& offset);
 
         [[nodiscard]] const sf::String& GetString() const;
         [[nodiscard]] const Font* GetFont() const;
