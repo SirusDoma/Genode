@@ -60,6 +60,12 @@ namespace Gx
     {
     public:
         ////////////////////////////////////////////////////////////
+        /// @brief Virtual destructor
+        ///
+        ////////////////////////////////////////////////////////////
+        virtual ~Font() = default;
+
+        ////////////////////////////////////////////////////////////
         /// brief Load the font from a file
         ///
         /// The supported font formats are: TrueType, Type 1, CFF,
