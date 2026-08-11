@@ -54,7 +54,10 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
 
 if(WIN32)
     # Windows (Visual Studio) Compiler Output Flags
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    if (NOT CMAKE_MSVC_RUNTIME_LIBRARY)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
+
     set_target_properties(${LIBRARY_NAME} PROPERTIES
         WIN32_EXECUTABLE     FALSE
         MSVC_RUNTIME_LIBRARY ${CMAKE_MSVC_RUNTIME_LIBRARY}
