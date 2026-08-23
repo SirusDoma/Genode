@@ -11,4 +11,3 @@
 #include <Genode/System.hpp>
 #include <Genode/Network.hpp>
 #include <Genode/IO.hpp>
-#include <Genode/UI.hpp>

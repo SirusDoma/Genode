@@ -1,4 +1,4 @@
-﻿#include <Genode/UI/Cursor.hpp>
+#include <Genode/Graphics/Cursor.hpp>
 #include <Genode/IO/IOException.hpp>
 
 #include <SFML/Graphics/Image.hpp>

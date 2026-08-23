@@ -6,6 +6,7 @@
 #include <Genode/Graphics/RenderSurfaceAdaptor.hpp>
 #include <Genode/Graphics/VertexPool.hpp>
 #include <Genode/Graphics/Transformable.hpp>
+#include <Genode/Graphics/Cursor.hpp>
 #include <Genode/Graphics/Sprite.hpp>
 #include <Genode/Graphics/Animation.hpp>
 #include <Genode/Graphics/Font.hpp>

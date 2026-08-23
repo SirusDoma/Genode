@@ -4,7 +4,7 @@
 #include <Genode/SceneGraph/SceneDirector.hpp>
 #include <Genode/IO/ResourceLoaderFactory.hpp>
 #include <Genode/Graphics/Sprite.hpp>
-#include <Genode/UI/Cursor.hpp>
+#include <Genode/Graphics/Cursor.hpp>
 
 #include <mutex>
 #include <utility>
