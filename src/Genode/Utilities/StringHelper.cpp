@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <regex>
 
-#ifndef _WIN32
+#ifndef _MSC_VER
 #include <cxxabi.h>
 #endif
 
@@ -104,7 +104,7 @@ namespace Gx
     {
         auto name = std::string(type.name());
 
-#ifndef _WIN32
+#ifndef _MSC_VER
         int status = -1;
         const auto buffer = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
 
